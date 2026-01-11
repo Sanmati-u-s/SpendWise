@@ -6,7 +6,10 @@ import {
     where,
     onSnapshot,
     orderBy,
-    serverTimestamp
+    serverTimestamp,
+    doc,
+    deleteDoc,
+    updateDoc
 } from "firebase/firestore";
 
 const EXPENSES_COLLECTION = 'expenses';
@@ -17,6 +20,14 @@ export const addExpense = (uid, expense) => {
         uid,
         createdAt: serverTimestamp()
     });
+};
+
+export const deleteExpense = (id) => {
+    return deleteDoc(doc(db, EXPENSES_COLLECTION, id));
+};
+
+export const updateExpense = (id, data) => {
+    return updateDoc(doc(db, EXPENSES_COLLECTION, id), data);
 };
 
 export const subscribeToExpenses = (uid, callback) => {

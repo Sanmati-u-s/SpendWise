@@ -48,10 +48,30 @@ export const renderDashboard = (user) => {
             <div class="value" id="total-amount">Rs. 0.00</div>
           </div>
         </div>
+        
+        <div class="stats-container" id="category-breakdown">
+          <!-- Category stats will be injected here -->
+        </div>
+
+        <div class="charts-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 2rem;">
+          <div style="background: var(--surface-color); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
+            <h3 style="margin-bottom: 1rem; font-size: 1rem; color: var(--text-secondary);">Category Distribution</h3>
+            <canvas id="pie-chart"></canvas>
+          </div>
+          <div style="background: var(--surface-color); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
+            <h3 style="margin-bottom: 1rem; font-size: 1rem; color: var(--text-secondary);">Monthly Trends (Last 6 Months)</h3>
+            <canvas id="bar-chart"></canvas>
+          </div>
+        </div>
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
           <h3>Recent Transactions</h3>
-          <button id="add-expense-btn">Add Expense</button>
+          <div style="display: flex; gap: 0.5rem;">
+            <select id="date-filter" style="padding: 0.5rem; border-radius: var(--radius); border: 1px solid var(--border-color); margin-bottom: 0;">
+              <option value="all">All Time</option>
+            </select>
+            <button id="add-expense-btn">Add Expense</button>
+          </div>
         </div>
         
         <div id="expenses-list">
