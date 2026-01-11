@@ -315,3 +315,37 @@ header h2 {
 .hidden {
   display: none !important;
 }
+
+/* Edit/Delete Buttons */
+.btn-icon {
+  padding: 0.5rem;
+  margin-left: 0.5rem;
+  font-size: 0.9rem;
+  border-radius: var(--radius);
+  transition: all 0.2s;
+}
+
+.btn-edit {
+  background-color: #fbbf24;
+  /* Amber 400 */
+  color: #fff;
+}
+
+.btn-edit:hover {
+  background-color: #f59e0b;
+  /* Amber 500 */
+}
+
+.btn-delete {
+  background-color: var(--danger-color);
+  color: #fff;
+}
+
+.btn-delete:hover {
+  background-color: #dc2626;
+}
+
+.expense-actions {
+  display: flex;
+  align-items: center;
+}
