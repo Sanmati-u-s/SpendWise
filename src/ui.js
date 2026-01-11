@@ -38,7 +38,14 @@ export const renderDashboard = (user) => {
           <h2>My Expenses</h2>
           <p style="color: var(--text-secondary); margin: 0;">${user.email}</p>
         </div>
-        <button id="logout-btn" class="btn-secondary">Logout</button>
+        <div class="header-actions">
+          <span class="theme-label" style="font-size: 0.9rem; margin-right: 0.5rem; font-weight: 600;">Dark Mode</span>
+          <label class="theme-switch" title="Toggle Theme">
+            <input type="checkbox" id="theme-toggle-input">
+            <span class="slider round"></span>
+          </label>
+          <button id="logout-btn" class="btn-secondary">Logout</button>
+        </div>
       </header>
       
       <main>
@@ -54,12 +61,12 @@ export const renderDashboard = (user) => {
         </div>
 
         <div class="charts-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 2rem;">
-          <div style="background: var(--surface-color); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
-            <h3 style="margin-bottom: 1rem; font-size: 1rem; color: var(--text-secondary);">Category Distribution</h3>
+          <div class="chart-card">
+            <h3>Category Distribution</h3>
             <canvas id="pie-chart"></canvas>
           </div>
-          <div style="background: var(--surface-color); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
-            <h3 style="margin-bottom: 1rem; font-size: 1rem; color: var(--text-secondary);">Monthly Trends (Last 6 Months)</h3>
+          <div class="chart-card">
+            <h3>Monthly Trends (Last 12 Months)</h3>
             <canvas id="bar-chart"></canvas>
           </div>
         </div>

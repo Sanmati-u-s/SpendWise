@@ -11,6 +11,23 @@ let currentUser = null;
 let expensesCleanup = null;
 let currentEditingId = null;
 
+// Theme Management
+const getPreferredTheme = () => {
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme) {
+    return savedTheme;
+  }
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+};
+
+const setTheme = (theme) => {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem('theme', theme);
+};
+
+// Initialize Theme
+setTheme(getPreferredTheme());
+
 // Initialization
 initAuth((user) => {
   currentUser = user;
@@ -65,6 +82,19 @@ function showSignup() {
 
 function showDashboard(user) {
   app.innerHTML = renderDashboard(user);
+
+  // Theme Toggle Logic
+  const themeInput = document.getElementById('theme-toggle-input');
+  const updateThemeState = () => {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    themeInput.checked = currentTheme === 'dark';
+  };
+  updateThemeState();
+
+  themeInput.addEventListener('change', (e) => {
+    const newTheme = e.target.checked ? 'dark' : 'light';
+    setTheme(newTheme);
+  });
 
   // Setup Logout
   document.getElementById('logout-btn').addEventListener('click', async () => {
@@ -155,7 +185,9 @@ function showDashboard(user) {
       datasets: [{
         data: Object.values(categoryCounts),
         backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#3b82f6'],
-        borderWidth: 0
+        borderWidth: 2,
+        borderColor: '#ffffff',
+        hoverOffset: 4
       }]
     };
 
@@ -164,22 +196,38 @@ function showDashboard(user) {
       type: 'doughnut',
       data: pieData,
       options: {
-        plugins: { legend: { position: 'bottom' } },
-        cutout: '70%'
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              usePointStyle: true,
+              padding: 20,
+              font: {
+                size: 14,
+                weight: '600'
+              }
+            }
+          }
+        },
+        cutout: '75%',
+        layout: {
+          padding: 10
+        }
       }
     });
 
-    // 2. Bar Chart Logic (Uses LAST 6 MONTHS regardless of filter)
+    // 2. Bar Chart Logic (Uses LAST 12 MONTHS regardless of filter)
     const monthlyTotals = {};
     const today = new Date();
-    const last6Months = [];
+    const last12Months = [];
 
-    for (let i = 5; i >= 0; i--) {
+    for (let i = 11; i >= 0; i--) {
       const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
       const monthYear = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
       const label = d.toLocaleDateString('default', { month: 'short' });
       monthlyTotals[monthYear] = 0;
-      last6Months.push({ key: monthYear, label: label });
+      last12Months.push({ key: monthYear, label: label });
     }
 
     allExpenses.forEach(exp => {
@@ -191,12 +239,17 @@ function showDashboard(user) {
     });
 
     const barData = {
-      labels: last6Months.map(m => m.label),
+      labels: last12Months.map(m => m.label),
       datasets: [{
         label: 'Monthly Spending',
-        data: last6Months.map(m => monthlyTotals[m.key]),
-        backgroundColor: '#6366f1',
-        borderRadius: 6,
+        data: last12Months.map(m => monthlyTotals[m.key]),
+        backgroundColor: [
+          '#6366f1', '#ec4899', '#8b5cf6', '#10b981', '#f59e0b', '#3b82f6',
+          '#ef4444', '#06b6d4', '#d946ef', '#84cc16', '#f97316', '#14b8a6'
+        ],
+        borderRadius: 4,
+        barPercentage: 0.7,
+        categoryPercentage: 0.8
       }]
     };
 
@@ -205,8 +258,15 @@ function showDashboard(user) {
       type: 'bar',
       data: barData,
       options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false, /* Fix spacing/aspect ratio */
         scales: {
-          y: { beginAtZero: true, grid: { display: false } },
+          y: {
+            beginAtZero: true,
+            grid: { display: false },
+            ticks: { autoSkip: false } /* Show all labels */
+          },
           x: { grid: { display: false } }
         },
         plugins: { legend: { display: false } }
@@ -249,13 +309,27 @@ function showDashboard(user) {
         categoryTotals[expense.category] = expense.amount;
       }
 
+      // Emoji Mapper
+      const getCategoryEmoji = (cat) => {
+        const lowerCat = cat.toLowerCase();
+        if (lowerCat.includes('food')) return '🍔';
+        if (lowerCat.includes('transport')) return '🚗';
+        if (lowerCat.includes('utility') || lowerCat.includes('bill')) return '💡';
+        if (lowerCat.includes('game') || lowerCat.includes('entertainment')) return '🎮';
+        if (lowerCat.includes('health')) return '🏥';
+        if (lowerCat.includes('shop')) return '🛍️';
+        return '💸';
+      };
+
+      const emoji = getCategoryEmoji(expense.category);
+
       const el = document.createElement('div');
       el.className = 'expense-item';
       el.innerHTML = `
         <div class="expense-info">
           <h4>${expense.description}</h4>
-          <p class="date">${new Date(expense.date).toLocaleDateString()}</p>
-          <span class="expense-category">${expense.category}</span>
+          <p class="date">${new Date(expense.date).toLocaleDateString('en-GB')}</p>
+          <span class="expense-category">${emoji} ${expense.category}</span>
         </div>
         <div class="expense-right">
           <span class="expense-amount">Rs. ${expense.amount.toFixed(2)}</span>
