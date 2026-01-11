@@ -58,6 +58,13 @@ function showLogin() {
     e.preventDefault();
     showSignup();
   });
+
+  // Theme Toggle Logic
+  const themeInput = document.getElementById('theme-toggle-input');
+  if (themeInput) {
+    themeInput.checked = document.documentElement.getAttribute('data-theme') === 'dark';
+    themeInput.addEventListener('change', (e) => setTheme(e.target.checked ? 'dark' : 'light'));
+  }
 }
 
 function showSignup() {
@@ -67,8 +74,11 @@ function showSignup() {
     e.preventDefault();
     const email = e.target.email.value;
     const password = e.target.password.value;
+    const username = e.target.username.value; // Get username
     try {
-      await registerUser(email, password);
+      await registerUser(username, email, password);
+      // Reload to ensure displayName is updated in the UI
+      window.location.reload();
     } catch (error) {
       alert(error.message);
     }
@@ -78,6 +88,13 @@ function showSignup() {
     e.preventDefault();
     showLogin();
   });
+
+  // Theme Toggle Logic
+  const themeInput = document.getElementById('theme-toggle-input');
+  if (themeInput) {
+    themeInput.checked = document.documentElement.getAttribute('data-theme') === 'dark';
+    themeInput.addEventListener('change', (e) => setTheme(e.target.checked ? 'dark' : 'light'));
+  }
 }
 
 function showDashboard(user) {
