@@ -1,16 +1,13 @@
 # SpendWise - Personal Expenses Tracker
 
-A modern, intuitive, and feature-rich personal expense tracking application built to help you manage your finances efficiently.
-
-![SpendWise Screenshots](https://via.placeholder.com/800x400?text=SpendWise+App+Screenshot)
+A modern and intuitive personal expense tracking application built to help you manage your finances efficiently.
 
 ## 🚀 Key Features
 
 ### 🔐 Authentication & User Profile
 
-- **Secure Signup**: Create an account with a unique **Username** and Email.
+- **Secure Signup**: Create an account with a unique **Username** and **Email**.
 - **Easy Login**: Access your dashboard securely using your Email and Password.
-- **Personalized Dashboard**: Displays your chosen username for a personal touch.
 
 ### 📊 Visual Data Analytics
 
@@ -23,12 +20,12 @@ A modern, intuitive, and feature-rich personal expense tracking application buil
 - **Glassmorphism Design**: Sleek, translucent cards with vibrant background gradients.
 - **Dark Mode**: Fully supported dark theme for comfortable night-time usage.
 - **Responsive Layout**: Works seamlessly on desktops, tablets, and mobile devices.
-- **Interactive Elements**: Smooth animations, hover effects, and custom-styled inputs.
 
-### 📅 Expense Management
+### 💸 Expense Management
 
 - **CRUD Operations**: Easily **Add**, **Edit**, and **Delete** expenses.
-- **Smart Categorization**: Auto-assigned emojis for categories (🍔 Food, 🚗 Transport, etc.).
+- **Catergorization**: Add expenses with description, amount, category, and date
+- **Real-time data synchronization**: Using Firestore listeners
 - **Filtering**: View expenses for specific months or see your entire history.
 
 ## 🛠️ Tech Stack
@@ -39,13 +36,19 @@ A modern, intuitive, and feature-rich personal expense tracking application buil
 - **Build Tool**: Vite.
 - **Libraries**: `Chart.js` for data visualization.
 
+### Deployment
+- Vercel
+
+## 🚀 Live Demo
+https://personal-expenses-tracker-gamma.vercel.app/ 
+
 ## ⚙️ Setup & Installation
 
 1. **Clone the Repository**:
 
    ```bash
-   git clone https://github.com/your-username/spendwise-tracker.git
-   cd spendwise-tracker
+   git clone https://github.com/Sanmati-u-s/Personal-Expenses-Tracker.git
+   cd Personal-Expenses-Tracker
    ```
 2. **Install Dependencies**:
 
