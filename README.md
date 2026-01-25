@@ -17,8 +17,6 @@ A modern and intuitive personal expense tracking application built to help you m
 
 ### 🎨 Modern UI & Experimentation
 
-- **Glassmorphism Design**: Sleek, translucent cards with vibrant background gradients.
-- **Dark Mode**: Fully supported dark theme for comfortable night-time usage.
 - **Responsive Layout**: Works seamlessly on desktops, tablets, and mobile devices.
 
 ### 💸 Expense Management
