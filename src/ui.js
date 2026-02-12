@@ -11,7 +11,7 @@ export const renderLogin = () => {
       <div class="auth-container">
         <div class="brand-header">
             <p class="welcome-text">Welcome to</p>
-            <img src="/src/assets/logo.svg" alt="SpendWise Logo" class="brand-logo" />
+            <img src="/src/assets/logo2.svg" alt="SpendWise Logo" class="brand-logo" />
             <h1 class="brand-name">SpendWise</h1>
         </div>
         <p style="text-align: center; color: var(--text-secondary); margin-top: 0.5rem; margin-bottom: 2rem;">Track your everyday expenses!</p>
@@ -74,7 +74,7 @@ export const renderDashboard = (user) => {
     <div class="container">
       <header>
         <div style="display: flex; align-items: center; gap: 1rem;">
-          <img src="/src/assets/logo.svg" alt="SpendWise Logo" class="brand-logo" style="width: 50px; height: 50px; margin: 0;" />
+          <img src="/src/assets/logo2.svg" alt="SpendWise Logo" class="brand-logo" style="width: 50px; height: 50px; margin: 0;" />
           <div>
             <h1 class="brand-name" style="font-size: 2rem; text-align: left; margin-bottom: 0;">SpendWise</h1>
             <p style="color: var(--text-secondary); margin: 0; font-size: 1rem; font-weight: 500;">Welcome, ${user.displayName || 'User'}</p>

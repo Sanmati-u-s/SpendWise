@@ -197,13 +197,30 @@ function showDashboard(user) {
       else categoryCounts[exp.category] = exp.amount;
     });
 
+    // Milder Pastel Palette matching the theme
+    // Expanded to 12 colors for the bar chart
+    const pastelColors = [
+      '#60a5fa', // Blue
+      '#34d399', // Emerald
+      '#fbbf24', // Amber
+      '#f87171', // Red
+      '#818cf8', // Indigo
+      '#c084fc', // Purple
+      '#22d3ee', // Cyan
+      '#f472b6', // Pink
+      '#a3e635', // Lime
+      '#fb923c', // Orange
+      '#2dd4bf', // Teal
+      '#38bdf8'  // Sky
+    ];
+
     const pieData = {
       labels: Object.keys(categoryCounts),
       datasets: [{
         data: Object.values(categoryCounts),
-        backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#3b82f6'],
+        backgroundColor: pastelColors,
         borderWidth: 2,
-        borderColor: '#ffffff',
+        borderColor: document.documentElement.getAttribute('data-theme') === 'dark' ? '#1e293b' : '#ffffff',
         hoverOffset: 4
       }]
     };
@@ -221,15 +238,22 @@ function showDashboard(user) {
               usePointStyle: true,
               padding: 20,
               font: {
-                size: 14,
-                weight: '600'
-              }
+                family: "'Outfit', sans-serif",
+                size: 13,
+                weight: '500'
+              },
+              color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim()
             }
           }
         },
-        cutout: '75%',
+        cutout: '70%', /* Slightly thicker */
         layout: {
           padding: 10
+        },
+        elements: {
+          arc: {
+            borderRadius: 8
+          }
         }
       }
     });
@@ -260,13 +284,10 @@ function showDashboard(user) {
       datasets: [{
         label: 'Monthly Spending',
         data: last12Months.map(m => monthlyTotals[m.key]),
-        backgroundColor: [
-          '#6366f1', '#ec4899', '#8b5cf6', '#10b981', '#f59e0b', '#3b82f6',
-          '#ef4444', '#06b6d4', '#d946ef', '#84cc16', '#f97316', '#14b8a6'
-        ],
-        borderRadius: 4,
-        barPercentage: 0.7,
-        categoryPercentage: 0.8
+        backgroundColor: pastelColors, /* Use the colorful palette */
+        borderRadius: 6,
+        barPercentage: 0.9,
+        categoryPercentage: 0.9
       }]
     };
 
@@ -278,13 +299,22 @@ function showDashboard(user) {
         indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false, /* Fix spacing/aspect ratio */
+        layout: {
+          padding: {
+            bottom: 0,
+            top: 0
+          }
+        },
         scales: {
           y: {
             beginAtZero: true,
-            grid: { display: false },
-            ticks: { autoSkip: false } /* Show all labels */
+            grid: { display: false, drawBorder: false },
+            ticks: { autoSkip: false, font: { family: "'Outfit', sans-serif" } }
           },
-          x: { grid: { display: false } }
+          x: {
+            grid: { display: false, drawBorder: false },
+            ticks: { font: { family: "'Outfit', sans-serif" } }
+          }
         },
         plugins: { legend: { display: false } }
       }
