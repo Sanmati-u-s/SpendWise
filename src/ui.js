@@ -80,6 +80,9 @@ export const renderDashboard = (user) => {
             <p style="color: var(--text-secondary); margin: 0; font-size: 1rem; font-weight: 500;">Welcome, ${user.displayName || 'User'}</p>
           </div>
         </div>
+                <div class="header-tagline">
+            <p>Smart tracking. Better decisions!</p>
+        </div>
         <div class="header-actions">
           <span class="theme-label" style="font-size: 0.9rem; margin-right: 0.5rem; font-weight: 600;">Dark Mode</span>
           <label class="theme-switch" title="Toggle Theme">
@@ -91,15 +94,41 @@ export const renderDashboard = (user) => {
       </header>
       
       <main>
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;">
+          <select id="date-filter" style="padding: 0.5rem; border-radius: var(--radius); border: 1px solid var(--border-color); background: var(--surface-color); color: var(--text-color); font-weight: 500; cursor: pointer;">
+              <option value="all">All Time</option>
+          </select>
+        </div>
+
         <div class="stats-container">
           <div class="stat-card">
             <h3>Total Spending</h3>
-            <div class="value" id="total-amount">Rs. 0.00</div>
+            <div class="value" id="total-amount">₹ 0.00</div>
           </div>
         </div>
         
         <div class="stats-container" id="category-breakdown">
           <!-- Category stats will be injected here -->
+        </div>
+
+        <div class="budget-overview" style="background: var(--card-bg); padding: 1.5rem; border-radius: var(--radius); margin-bottom: 2rem; box-shadow: var(--shadow);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="margin: 0;">Monthly Budget</h3>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <select id="budget-month-select" style="padding: 0.25rem; font-size: 0.8rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
+                        <!-- Options populated by JS -->
+                    </select>
+                    <button id="edit-budget-btn" class="btn-secondary" style="padding: 0.25rem 0.75rem; font-size: 0.8rem;">Set Budget</button>
+                </div>
+            </div>
+            <div style="margin-bottom: 0.5rem; display: flex; justify-content: space-between; font-weight: 500; color: var(--text-secondary);">
+                <span id="budget-status-text">Spent: ₹ 0.00 / ₹ 0.00</span>
+                <span id="budget-percentage">0%</span>
+            </div>
+            <div style="background: var(--border-color); height: 10px; border-radius: 5px; overflow: hidden;">
+                <div id="budget-progress-bar" style="width: 0%; height: 100%; background: var(--success-color); transition: width 0.3s ease, background-color 0.3s ease;"></div>
+            </div>
+            <p id="budget-warning" style="color: var(--danger-color); font-size: 0.9rem; margin-top: 0.5rem; display: none;">⚠️ You have exceeded your monthly budget!</p>
         </div>
 
         <div class="charts-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 2rem;">
@@ -116,10 +145,8 @@ export const renderDashboard = (user) => {
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
           <h3>Recent Transactions</h3>
           <div style="display: flex; gap: 0.5rem;">
-            <select id="date-filter" style="padding: 0.5rem; border-radius: var(--radius); border: 1px solid var(--border-color); margin-bottom: 0;">
-              <option value="all">All Time</option>
-            </select>
-            <button id="add-expense-btn">Add Expense</button>
+            <button id="add-income-btn" type="button" style="background: var(--success-color); border: none; color: white; padding: 1rem 2rem; border-radius: var(--radius); font-size: 1.1rem; cursor: pointer; box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4);">Add Income</button>
+            <button id="add-expense-btn" type="button">Add Expense</button>
           </div>
         </div>
         
@@ -133,6 +160,7 @@ export const renderDashboard = (user) => {
         <div class="modal-content">
           <h3>Add New Expense</h3>
           <form id="add-expense-form">
+            <input type="hidden" name="type" value="expense">
             <input type="text" name="description" placeholder="Description (e.g., Grocery)" required />
             <input type="number" name="amount" placeholder="Amount" step="0.01" min="0" required />
             <input type="text" name="category" placeholder="Category" list="categories" required />
@@ -150,6 +178,28 @@ export const renderDashboard = (user) => {
               <button type="submit">Add Expense</button>
             </div>
           </form>
+        </div>
+      </div>
+
+      <!-- Edit Budget Modal -->
+      <div id="edit-budget-modal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <h3>Set Monthly Budget</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 1rem; font-size: 0.9rem;">Set a spending limit for a specific month.</p>
+            <form id="edit-budget-form">
+                <div class="input-group">
+                    <label style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem;">Select Month</label>
+                    <input type="month" name="month" required style="width: 100%; box-sizing: border-box;" />
+                </div>
+                <div class="input-group">
+                    <label style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem;">Budget Amount</label>
+                    <input type="number" name="limit" placeholder="Amount (e.g., 20000)" step="0.01" min="0" required />
+                </div>
+                <div class="modal-actions">
+                    <button type="button" id="close-budget-modal-btn" class="btn-secondary">Cancel</button>
+                    <button type="submit">Save Limit</button>
+                </div>
+            </form>
         </div>
       </div>
     </div>

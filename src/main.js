@@ -1,6 +1,6 @@
 import './style.css';
 import { initAuth, registerUser, loginUser, logoutUser } from './auth';
-import { addExpense, subscribeToExpenses, deleteExpense, updateExpense } from './db';
+import { addExpense, subscribeToExpenses, deleteExpense, updateExpense, setMonthlyBudget, subscribeToBudget } from './db';
 import { renderLogin, renderSignup, renderDashboard } from './ui';
 import Chart from 'chart.js/auto';
 
@@ -9,7 +9,9 @@ const app = document.querySelector('#app');
 // State
 let currentUser = null;
 let expensesCleanup = null;
+let budgetCleanup = null;
 let currentEditingId = null;
+let currentBudgetLimit = null;
 
 // Theme Management
 const getPreferredTheme = () => {
@@ -41,6 +43,7 @@ initAuth((user) => {
 // Navigation Functions
 function showLogin() {
   if (expensesCleanup) expensesCleanup();
+  if (budgetCleanup) budgetCleanup();
   app.innerHTML = renderLogin();
 
   document.getElementById('login-form').addEventListener('submit', async (e) => {
@@ -122,15 +125,40 @@ function showDashboard(user) {
     }
   });
 
-  // Setup Add Expense Modal
+  // Setup Add Expense/Income Modals
   const modal = document.getElementById('add-expense-modal');
-  const addBtn = document.getElementById('add-expense-btn');
+  const addExpenseBtn = document.getElementById('add-expense-btn');
+  const addIncomeBtn = document.getElementById('add-income-btn');
   const closeBtn = document.getElementById('close-modal-btn');
   const form = document.getElementById('add-expense-form');
 
-  addBtn.addEventListener('click', () => {
+  const openModal = (type) => {
     modal.classList.add('active');
-  });
+    const titleEl = document.querySelector('#add-expense-modal h3');
+    const submitBtn = document.querySelector('#add-expense-form button[type="submit"]');
+
+    if (type === 'income') {
+      titleEl.textContent = 'Add New Income';
+      submitBtn.textContent = 'Add Income';
+      form.type.value = 'income';
+    } else {
+      titleEl.textContent = 'Add New Expense';
+      submitBtn.textContent = 'Add Expense';
+      form.type.value = 'expense';
+    }
+  };
+
+  if (addExpenseBtn) {
+    addExpenseBtn.addEventListener('click', () => {
+      openModal('expense');
+    });
+  }
+
+  if (addIncomeBtn) {
+    addIncomeBtn.addEventListener('click', () => {
+      openModal('income');
+    });
+  }
 
   closeBtn.addEventListener('click', () => {
     modal.classList.remove('active');
@@ -153,7 +181,8 @@ function showDashboard(user) {
       description: e.target.description.value,
       amount: parseFloat(e.target.amount.value),
       category: e.target.category.value,
-      date: e.target.date.value
+      date: e.target.date.value,
+      type: e.target.type.value // 'income' or 'expense'
     };
 
     try {
@@ -167,11 +196,11 @@ function showDashboard(user) {
 
       // Reset Edit State
       currentEditingId = null;
-      document.querySelector('#add-expense-modal h3').textContent = 'Add New Expense';
-      document.querySelector('#add-expense-form button[type="submit"]').textContent = 'Add Expense';
+      document.querySelector('#add-expense-modal h3').textContent = 'Add New Transaction';
+      document.querySelector('#add-expense-form button[type="submit"]').textContent = 'Add Transaction';
     } catch (error) {
       console.error("Error saving expense: ", error);
-      alert("Failed to save expense");
+      alert("Failed to save transaction");
     }
   });
 
@@ -327,51 +356,85 @@ function showDashboard(user) {
 
     if (filterValue !== 'all') {
       filteredExpenses = allExpenses.filter(exp => {
-        const expDate = new Date(exp.date);
-        const monthYear = `${expDate.getFullYear()}-${String(expDate.getMonth() + 1).padStart(2, '0')}`;
-        return monthYear === filterValue;
+        // exp.date is YYYY-MM-DD. filterValue is YYYY-MM.
+        return exp.date.startsWith(filterValue);
       });
     }
 
-    // Update Charts
-    updateCharts(filteredExpenses, allExpenses);
+    // Calculate Totals
+    const incomeTotal = filteredExpenses
+      .filter(t => t.type === 'income')
+      .reduce((sum, t) => sum + parseFloat(t.amount || 0), 0);
+
+    const expenseTotal = filteredExpenses
+      .filter(t => t.type !== 'income') // Default to expense if missing
+      .reduce((sum, t) => sum + parseFloat(t.amount || 0), 0);
+
+    const balance = incomeTotal - expenseTotal;
+
+    // Update Stats UI
+    const balanceEl = document.getElementById('total-balance');
+    const incomeEl = document.getElementById('total-income');
+    const expensesEl = document.getElementById('total-amount'); // Corrected ID
+
+    if (balanceEl) balanceEl.textContent = `₹ ${balance.toFixed(2)}`;
+    if (incomeEl) incomeEl.textContent = `₹ ${incomeTotal.toFixed(2)}`;
+    if (expensesEl) expensesEl.textContent = `₹ ${expenseTotal.toFixed(2)}`;
+
+
+    // Update Charts (ONLY Expenses)
+    const expenseOnlyData = filteredExpenses.filter(t => t.type !== 'income');
+    updateCharts(expenseOnlyData, allExpenses.filter(t => t.type !== 'income'));
 
     listContainer.innerHTML = '';
-    let total = 0;
-    const categoryTotals = {};
 
     if (filteredExpenses.length === 0) {
-      listContainer.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">No expenses found for this period.</p>';
+      listContainer.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">No transactions found for this period.</p>';
     }
 
-    filteredExpenses.forEach(expense => {
-      // Ensure number
-      expense.amount = parseFloat(expense.amount);
-      total += expense.amount;
-
-      // Category Calculation
+    // Category Totals for Expense Breakdown
+    const categoryTotals = {};
+    expenseOnlyData.forEach(expense => {
       if (categoryTotals[expense.category]) {
         categoryTotals[expense.category] += expense.amount;
       } else {
         categoryTotals[expense.category] = expense.amount;
       }
+    });
+
+    filteredExpenses.forEach(expense => {
+      // Ensure number
+      expense.amount = parseFloat(expense.amount);
+      const isIncome = expense.type === 'income';
 
       // Emoji Mapper
       const getCategoryEmoji = (cat) => {
         const lowerCat = cat.toLowerCase();
+        // Income
+        if (lowerCat.includes('salary')) return '💰';
+        if (lowerCat.includes('freelance')) return '💻';
+        if (lowerCat.includes('invest')) return '📈';
+        if (lowerCat.includes('gift')) return '🎁';
+
+        // Expenses
         if (lowerCat.includes('food')) return '🍔';
         if (lowerCat.includes('transport')) return '🚗';
         if (lowerCat.includes('utility') || lowerCat.includes('bill')) return '💡';
         if (lowerCat.includes('game') || lowerCat.includes('entertainment')) return '🎮';
         if (lowerCat.includes('health')) return '🏥';
         if (lowerCat.includes('shop')) return '🛍️';
-        return '💸';
+        return isIncome ? '💵' : '💸';
       };
 
       const emoji = getCategoryEmoji(expense.category);
+      const amountClass = isIncome ? 'text-success' : 'text-danger';
+      const sign = isIncome ? '+' : '-';
 
       const el = document.createElement('div');
       el.className = 'expense-item';
+      // Add border color based on type
+      el.style.borderLeftColor = isIncome ? 'var(--success-color)' : 'var(--danger-color)';
+
       el.innerHTML = `
         <div class="expense-info">
           <h4>${expense.description}</h4>
@@ -379,7 +442,7 @@ function showDashboard(user) {
           <span class="expense-category">${emoji} ${expense.category}</span>
         </div>
         <div class="expense-right">
-          <span class="expense-amount">Rs. ${expense.amount.toFixed(2)}</span>
+          <span class="expense-amount ${amountClass}">${sign} Rs. ${expense.amount.toFixed(2)}</span>
           <div class="expense-actions">
             <button class="btn-icon btn-edit" title="Edit">✎</button>
             <button class="btn-icon btn-delete" title="Delete">🗑</button>
@@ -389,7 +452,7 @@ function showDashboard(user) {
 
       // Attach Listeners
       el.querySelector('.btn-delete').addEventListener('click', async () => {
-        if (confirm('Are you sure you want to delete this expense?')) {
+        if (confirm('Are you sure you want to delete this transaction?')) {
           try {
             await deleteExpense(expense.id);
           } catch (error) {
@@ -406,17 +469,22 @@ function showDashboard(user) {
         form.category.value = expense.category;
         form.date.value = expense.date;
 
-        document.querySelector('#add-expense-modal h3').textContent = 'Edit Expense';
-        document.querySelector('#add-expense-form button[type="submit"]').textContent = 'Update Expense';
+        // Set Type
+        if (expense.type) {
+          form.type.value = expense.type;
+        } else {
+          form.type.value = 'expense';
+        }
+
+        document.querySelector('#add-expense-modal h3').textContent = 'Edit Transaction';
+        document.querySelector('#add-expense-form button[type="submit"]').textContent = 'Update Transaction';
         modal.classList.add('active');
       });
 
       listContainer.appendChild(el);
     });
 
-    totalAmountEl.textContent = `Rs. ${total.toFixed(2)}`;
-
-    // Render Category Breakdown
+    // Render Category Breakdown (Expenses Only)
     const categoryContainer = document.getElementById('category-breakdown');
     if (categoryContainer) {
       categoryContainer.innerHTML = '';
@@ -426,7 +494,7 @@ function showDashboard(user) {
         card.className = 'stat-card';
         card.innerHTML = `
           <h3>${category}</h3>
-          <div class="value" style="font-size: 1.5rem;">Rs. ${catTotal.toFixed(2)}</div>
+          <div class="value" style="font-size: 1.5rem;">₹ ${catTotal.toFixed(2)}</div>
         `;
         categoryContainer.appendChild(card);
       });
@@ -466,9 +534,147 @@ function showDashboard(user) {
 
   filterSelect.addEventListener('change', renderExpenses);
 
+  // Budget Logic
+  let currentBudgetMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
+  let allBudgets = {};
+
+  const budgetMonthSelect = document.getElementById('budget-month-select');
+
+  const updateBudgetMonthOptions = () => {
+    if (!budgetMonthSelect) return;
+
+    const distinctMonths = new Set();
+    distinctMonths.add(new Date().toISOString().slice(0, 7)); // Ensure current month is always there
+
+    // Add months from expenses
+    allExpenses.forEach(e => distinctMonths.add(e.date.slice(0, 7)));
+
+    // Add months from budgets
+    Object.keys(allBudgets).forEach(m => distinctMonths.add(m));
+
+    const sortedMonths = Array.from(distinctMonths).sort().reverse();
+
+    budgetMonthSelect.innerHTML = '';
+    sortedMonths.forEach(month => {
+      const [y, m] = month.split('-');
+      const label = new Date(y, m - 1).toLocaleDateString('default', { month: 'long', year: 'numeric' });
+      const opt = document.createElement('option');
+      opt.value = month;
+      opt.textContent = label;
+      budgetMonthSelect.appendChild(opt);
+    });
+
+    budgetMonthSelect.value = currentBudgetMonth;
+  };
+
+  if (budgetMonthSelect) {
+    budgetMonthSelect.addEventListener('change', (e) => {
+      currentBudgetMonth = e.target.value;
+      updateBudgetUI();
+    });
+  }
+
+  const updateBudgetUI = () => {
+    const budgetCard = document.querySelector('.budget-overview');
+    if (!budgetCard) return;
+
+    const limit = allBudgets[currentBudgetMonth] || 0;
+
+    if (limit === 0) {
+      document.getElementById('budget-status-text').textContent = 'No budget set for this month';
+      document.getElementById('budget-percentage').textContent = '';
+      document.getElementById('budget-progress-bar').style.width = '0%';
+      document.getElementById('budget-warning').style.display = 'none';
+      return;
+    }
+
+    // Calculate total expenses for SELECTED MONTH
+    // currentBudgetMonth is YYYY-MM
+
+    const currentMonthExpenses = allExpenses
+      .filter(t => t.type !== 'income') // Only expenses
+      .filter(t => {
+        // Robust string check: YYYY-MM-DD starts with YYYY-MM
+        return t.date.startsWith(currentBudgetMonth);
+      })
+      .reduce((sum, t) => sum + parseFloat(t.amount || 0), 0);
+
+    const percentage = Math.min((currentMonthExpenses / limit) * 100, 100);
+    const isOverBudget = currentMonthExpenses > limit;
+
+    // Update Text
+    document.getElementById('budget-status-text').textContent = `Spent: ₹ ${currentMonthExpenses.toFixed(2)} / ₹ ${limit.toFixed(2)}`;
+    document.getElementById('budget-percentage').textContent = `${Math.round((currentMonthExpenses / limit) * 100)}%`;
+
+    // Update Bar Color & Width
+    const progressBar = document.getElementById('budget-progress-bar');
+    progressBar.style.width = `${percentage}%`;
+
+    let color = 'var(--success-color)';
+    if (percentage > 50) color = '#fbbf24'; // Warning (Yellow/Orange)
+    if (percentage > 90) color = 'var(--danger-color)'; // Danger (Red)
+
+    progressBar.style.backgroundColor = color;
+
+    // Warning Text
+    const warningEl = document.getElementById('budget-warning');
+    if (isOverBudget) {
+      warningEl.style.display = 'block';
+    } else {
+      warningEl.style.display = 'none';
+    }
+  };
+
+  // Budget Modal Listeners
+  const budgetModal = document.getElementById('edit-budget-modal');
+  const editBudgetBtn = document.getElementById('edit-budget-btn');
+  const closeBudgetBtn = document.getElementById('close-budget-modal-btn');
+  const budgetForm = document.getElementById('edit-budget-form');
+
+  if (editBudgetBtn) {
+    editBudgetBtn.addEventListener('click', () => {
+      budgetModal.classList.add('active');
+      budgetForm.month.value = currentBudgetMonth;
+      if (allBudgets[currentBudgetMonth]) {
+        budgetForm.limit.value = allBudgets[currentBudgetMonth];
+      } else {
+        budgetForm.limit.value = '';
+      }
+    });
+  }
+
+  if (closeBudgetBtn) {
+    closeBudgetBtn.addEventListener('click', () => {
+      budgetModal.classList.remove('active');
+    });
+  }
+
+  if (budgetForm) {
+    budgetForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const limit = e.target.limit.value;
+      const month = e.target.month.value;
+      try {
+        await setMonthlyBudget(user.uid, month, limit);
+        budgetModal.classList.remove('active');
+      } catch (error) {
+        console.error("Error setting budget:", error);
+        alert(`Failed to save budget: ${error.message}`);
+      }
+    });
+  }
+
   expensesCleanup = subscribeToExpenses(user.uid, (expenses) => {
     allExpenses = expenses;
     updateFilterOptions();
+    updateBudgetMonthOptions(); // Update month dropdown
     renderExpenses();
+    updateBudgetUI(); // Recalculate on expense change
+  });
+
+  budgetCleanup = subscribeToBudget(user.uid, (budgets) => {
+    allBudgets = budgets;
+    updateBudgetMonthOptions(); // Ensure logic handles new budget months
+    updateBudgetUI(); // Recalculate on budget change
   });
 }

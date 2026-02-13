@@ -164,6 +164,23 @@ header h2 {
   align-items: center;
 }
 
+.header-tagline {
+  display: none;
+  font-size: 1rem;
+  font-weight: 500;
+  font-style: italic;
+  color: var(--primary-color);
+  letter-spacing: 0.5px;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .header-tagline {
+    display: block;
+    flex-grow: 1;
+  }
+}
+
 /* Toggle Switch - Fun Style */
 .theme-switch {
   position: relative;

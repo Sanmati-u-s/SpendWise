@@ -36,10 +36,12 @@ A modern and intuitive personal expense tracking application built to help you m
 - **Libraries**: `Chart.js` for data visualization.
 
 ### Deployment
+
 - Vercel
 
 ### 🚀 Live Demo
-https://personal-expenses-tracker-gamma.vercel.app/ 
+
+https://personal-expenses-tracker-gamma.vercel.app/
 
 ## ⚙️ Setup & Installation
 
@@ -92,3 +94,40 @@ service cloud.firestore {
   }
 }
 ```
+
+## 🔮 Future Directions / Future Scope
+
+To take **SpendWise** to the next level, the following features are planned for future updates, categorized by complexity and impact:
+
+### 🚀 Level 1: Essential Enhancements
+
+* **Income Section**:
+  * Track various income sources (e.g., Salary, Freelance, Investments) separate from expenses.
+  * Visual distinction between income (green) and expenses (red) for clarity.
+  * Bar chart to show monthly income & expenses.
+* **Budget Goals & Alerts**:
+  * Set monthly spending limits(e.g., "Feb: Rs.500").
+  * Visual progress bars and color-coded alerts when approaching or exceeding limits.
+* **Data Export (CSV/PDF)**:
+  * One-click download of transaction history as CSV or PDF files.
+  * Useful for external analysis, tax preparation, or backup.
+* **Social Login**:
+  * Quick and secure sign-in using Google or GitHub accounts to simplify the onboarding process.
+
+### 🧠 Level 2: Advanced Intelligence & Search
+
+* **AI Spending Insights**:
+  * Smart text summaries analyzing spending patterns (e.g., "You spent 20% more on dining out this month compared to last month").
+  * Personalized recommendations for saving money based on historical data.
+* **Search & Advanced Filtering**:
+  * Global search bar to find transactions by keyword (e.g., "Starbucks", "Uber").
+  * Custom date range filters and multi-category selection for detailed analysis.
+
+### ✨ Level 3: Pro Features & Engagement
+
+* **Gamification**:
+  * Award badges and achievements for reaching financial milestones (e.g., "Savings Saver", "7-Day Streak").
+  * Encourage consistent tracking through positive reinforcement.
+* **Progressive Web App (PWA)**:
+  * Installable as a native-like app on mobile devices (iOS/Android).
+  * Offline capabilities to view data even without an internet connection.

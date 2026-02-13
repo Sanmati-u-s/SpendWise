@@ -68,8 +68,43 @@ export const subscribeToExpenses = (uid, callback) => {
     return onSnapshot(q, (snapshot) => {
         const expenses = [];
         snapshot.forEach((doc) => {
-            expenses.push({ id: doc.id, ...doc.data() });
+            const data = doc.data();
+            if (data.type !== 'budget') { // Filter out budget docs
+                expenses.push({ id: doc.id, ...data });
+            }
         });
         callback(expenses);
+    });
+};
+
+// Start Refactor: Store budgets in expenses collection to allow write
+export const setMonthlyBudget = (uid, month, amount) => {
+    // ID: budget_UID_YYYY-MM
+    const budgetId = `budget_${uid}_${month}`;
+    return setDoc(doc(db, EXPENSES_COLLECTION, budgetId), {
+        uid,
+        type: 'budget',
+        month,
+        limit: parseFloat(amount),
+        updatedAt: serverTimestamp()
+    });
+};
+
+export const subscribeToBudget = (uid, callback) => {
+    const q = query(
+        collection(db, EXPENSES_COLLECTION),
+        where("uid", "==", uid),
+        where("type", "==", "budget")
+    );
+
+    return onSnapshot(q, (snapshot) => {
+        const budgets = {};
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            if (data.month) {
+                budgets[data.month] = data.limit;
+            }
+        });
+        callback(budgets);
     });
 };
