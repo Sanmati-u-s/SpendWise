@@ -372,10 +372,10 @@ function showDashboard(user) {
 
     const balance = incomeTotal - expenseTotal;
 
-    // Update Stats UI
-    const balanceEl = document.getElementById('total-balance');
-    const incomeEl = document.getElementById('total-income');
-    const expensesEl = document.getElementById('total-amount'); // Corrected ID
+    // Update Overview Cards
+    const balanceEl = document.getElementById('balance-amount');
+    const incomeEl = document.getElementById('income-amount');
+    const expensesEl = document.getElementById('total-amount');
 
     if (balanceEl) balanceEl.textContent = `₹ ${balance.toFixed(2)}`;
     if (incomeEl) incomeEl.textContent = `₹ ${incomeTotal.toFixed(2)}`;
@@ -407,7 +407,7 @@ function showDashboard(user) {
       expense.amount = parseFloat(expense.amount);
       const isIncome = expense.type === 'income';
 
-      // Emoji Mapper
+      // Emoji Mapper (Keep for transaction list for now, or update to icons too? Let's keep emojis for the list as they are compact)
       const getCategoryEmoji = (cat) => {
         const lowerCat = cat.toLowerCase();
         // Income
@@ -484,20 +484,63 @@ function showDashboard(user) {
       listContainer.appendChild(el);
     });
 
-    // Render Category Breakdown (Expenses Only)
+    // Render Category Breakdown (Expenses Only) - NEW PRO STYLE
     const categoryContainer = document.getElementById('category-breakdown');
     if (categoryContainer) {
       categoryContainer.innerHTML = '';
+
+      // Calculate Total Expenses again to be sure (for percentages)
+      const totalExp = Object.values(categoryTotals).reduce((a, b) => a + b, 0);
+
+      const categoryList = document.createElement('div');
+      categoryList.className = 'category-list';
+      categoryList.style.display = 'flex';
+      categoryList.style.flexDirection = 'column';
+      categoryList.style.gap = '1rem';
+
       Object.keys(categoryTotals).forEach(category => {
         const catTotal = categoryTotals[category];
-        const card = document.createElement('div');
-        card.className = 'stat-card';
-        card.innerHTML = `
-          <h3>${category}</h3>
-          <div class="value" style="font-size: 1.5rem;">₹ ${catTotal.toFixed(2)}</div>
-        `;
-        categoryContainer.appendChild(card);
+        const percent = totalExp > 0 ? (catTotal / totalExp) * 100 : 0;
+
+        // Icon Mapping (Bootstrap Icons)
+        let iconClass = 'bi-wallet2';
+        const lowerCat = category.toLowerCase();
+        let colorClass = 'bg-secondary';
+
+        if (lowerCat.includes('food')) { iconClass = 'bi-basket'; colorClass = 'bg-warning'; }
+        else if (lowerCat.includes('transport')) { iconClass = 'bi-car-front'; colorClass = 'bg-info'; }
+        else if (lowerCat.includes('utility') || lowerCat.includes('bill')) { iconClass = 'bi-lightning-charge'; colorClass = 'bg-warning'; }
+        else if (lowerCat.includes('game') || lowerCat.includes('entertainment')) { iconClass = 'bi-controller'; colorClass = 'bg-primary'; }
+        else if (lowerCat.includes('health')) { iconClass = 'bi-heart-pulse'; colorClass = 'bg-danger'; }
+        else if (lowerCat.includes('shop')) { iconClass = 'bi-bag'; colorClass = 'bg-primary'; }
+        else if (lowerCat.includes('home') || lowerCat.includes('rent')) { iconClass = 'bi-house-door'; colorClass = 'bg-info'; }
+
+        const item = document.createElement('div');
+        item.className = 'category-list-item';
+        item.innerHTML = `
+            <div class="d-flex align-items-center mb-1 justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="item-icon ${colorClass} bg-opacity-10 text-body p-2 rounded" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
+                         <i class="bi ${iconClass}"></i>
+                    </div>
+                    <span class="fw-medium">${category}</span>
+                </div>
+                <div class="text-end">
+                    <div class="fw-bold">₹ ${catTotal.toFixed(2)}</div>
+                    <div class="small text-secondary">${percent.toFixed(1)}%</div>
+                </div>
+            </div>
+         `;
+        categoryList.appendChild(item);
       });
+
+      const card = document.createElement('div');
+      card.className = 'breakdown-card w-100'; // Custom class for distinct styling
+      card.innerHTML = `<h3 class="mb-3">Expense Breakdown</h3>`;
+      card.appendChild(categoryList);
+
+      categoryContainer.innerHTML = ''; // Clear previous
+      categoryContainer.appendChild(card);
     }
   };
 
