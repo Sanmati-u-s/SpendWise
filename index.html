@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
 
 <head>
   <meta charset="UTF-8">
@@ -12,69 +12,117 @@
   <!-- Bootstrap Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
-  <!-- Google Fonts (Inter & Outfit) -->
+  <!-- Google Fonts (Outfit) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600&display=swap"
     rel="stylesheet">
 
   <style>
     :root {
+      /* Dark Theme Palette */
       --primary-color: #3b82f6;
-      /* App Blue */
-      --secondary-color: #1e293b;
-      /* App Dark Text */
-      --accent-color: #06b6d4;
-      /* App Cyan */
-      --light-bg: #eff6ff;
-      /* App Background */
-      --text-main: #1e293b;
-      --text-muted: #64748b;
+      --primary-gradient: linear-gradient(135deg, #60a5fa 0%, #22d3ee 100%);
+      --secondary-gradient: linear-gradient(135deg, #818cf8 0%, #a78bfa 100%);
+      --peach-gradient: linear-gradient(135deg, #22d3ee 0%, #f472b6 100%);
+
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+
+      --bg-dark: #0f172a;
+      --bg-surface: #1e293b;
+      --bg-surface-2: #334155;
+
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+
+      --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+      --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
     }
 
     body {
-      font-family: 'Outfit', 'Inter', sans-serif;
+      font-family: 'Outfit', sans-serif;
       color: var(--text-main);
+      background-color: var(--bg-dark);
+      background-image:
+        radial-gradient(at 0% 0%, hsla(210, 81%, 60%, 0.15) 0, transparent 50%),
+        radial-gradient(at 100% 0%, hsla(230, 90%, 70%, 0.15) 0, transparent 50%);
+      min-height: 100vh;
       overflow-x: hidden;
+    }
+
+    /* Headings */
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    .navbar-brand {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-main);
+    }
+
+    p.text-muted {
+      color: var(--text-muted) !important;
     }
 
     /* Gradient Text */
     .text-gradient {
-      background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+      background: var(--primary-gradient);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .text-brand {
+      background: linear-gradient(to right, #f991c1, #06b6d4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
     /* Navbar */
     .navbar {
-      backdrop-filter: blur(10px);
-      background-color: rgba(255, 255, 255, 0.9);
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      backdrop-filter: blur(12px);
+      background-color: rgba(15, 23, 42, 0.8);
+      border-bottom: var(--glass-border);
+      padding-top: 1rem;
+      padding-bottom: 1rem;
     }
 
     .nav-link {
       font-weight: 500;
-      color: var(--text-main) !important;
-      transition: color 0.3s;
+      color: var(--text-muted) !important;
+      transition: all 0.3s ease;
+      font-size: 1.05rem;
     }
 
     .nav-link:hover {
-      color: var(--primary-color) !important;
+      color: #f991c1 !important;
+      transform: translateY(-1px);
+    }
+
+    .navbar-brand span {
+      color: var(--text-main) !important;
     }
 
     /* Hero Section */
     .hero-section {
-      background: linear-gradient(180deg, #eff6ff 0%, #ffffff 100%);
-      padding: 5rem 0 0;
+      padding: 6rem 0 4rem;
       position: relative;
-      overflow: hidden;
     }
 
     .hero-img {
-      border-radius: 12px;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      border-radius: 24px;
+      box-shadow: var(--shadow-lg);
       transform: perspective(1000px) rotateX(2deg) translateY(20px);
       opacity: 0;
       animation: slideUp 0.8s ease-out forwards 0.3s;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background-color: var(--bg-surface);
     }
 
     @keyframes slideUp {
@@ -86,82 +134,103 @@
 
     /* Buttons */
     .btn-primary {
-      background-color: var(--primary-color);
-      border-color: var(--primary-color);
-      padding: 0.75rem 1.5rem;
+      background: var(--primary-gradient);
+      border: none;
+      padding: 0.8rem 2.5rem;
       font-weight: 600;
+      border-radius: 50px;
+      box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.3);
+      transition: all 0.3s ease;
+      font-size: 1.1rem;
+      color: white;
     }
 
     .btn-primary:hover {
-      background-color: #1d4ed8;
-      border-color: #1d4ed8;
+      background: var(--primary-gradient);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+      filter: brightness(1.1);
     }
 
     .btn-outline-primary {
-      color: var(--primary-color);
-      border-color: var(--primary-color);
-      padding: 0.75rem 1.5rem;
+      color: var(--text-main);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 0.8rem 2.5rem;
       font-weight: 600;
+      border-radius: 50px;
+      background: rgba(255, 255, 255, 0.05);
+      transition: all 0.3s ease;
+      font-size: 1.1rem;
     }
 
     .btn-outline-primary:hover {
-      background-color: #eff6ff;
-      color: var(--primary-color);
-      border-color: var(--primary-color);
+      background-color: var(--bg-surface-2);
+      border-color: rgba(255, 255, 255, 0.3);
+      color: white;
+      transform: translateY(-2px);
     }
 
     /* Feature Cards */
-    .feature-icon-wrapper {
-      width: 3rem;
-      height: 3rem;
-      border-radius: 12px;
-      background: rgba(37, 99, 235, 0.1);
-      color: var(--primary-color);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 1rem;
-      font-size: 1.5rem;
-    }
-
     .card {
-      border: 1px solid #e2e8f0;
-      border-radius: 16px;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      background: var(--card-bg);
+      border: var(--glass-border);
+      border-radius: 24px;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: var(--shadow-sm);
     }
 
     .card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      transform: translateY(-8px);
+      box-shadow: var(--shadow-lg);
+      background: var(--bg-surface);
+      border-color: rgba(96, 165, 250, 0.5);
+      /* lighter blue border on hover */
     }
 
-    /* Steps */
-    .step-number {
-      width: 40px;
-      height: 40px;
-      background: var(--primary-color);
-      color: white;
-      border-radius: 50%;
+    .feature-icon-wrapper {
+      width: 3.5rem;
+      height: 3.5rem;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.05);
+      color: #60a5fa;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 700;
-      margin: 0 auto 1rem;
+      margin-bottom: 1.5rem;
+      font-size: 1.5rem;
+      transition: transform 0.3s ease;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .card:hover .feature-icon-wrapper {
+      transform: scale(1.1) rotate(5deg);
+      background: linear-gradient(90deg, #a73369, #0378c0);
+      color: white;
+      border-color: transparent;
+    }
+
+    /* Benefits Section */
+    .bg-dark-mesh {
+      background-image:
+        radial-gradient(at 0% 100%, hsla(250, 40%, 30%, 0.2) 0, transparent 50%),
+        radial-gradient(at 100% 100%, hsla(200, 40%, 30%, 0.2) 0, transparent 50%);
     }
 
     /* Footer */
     footer {
-      background-color: var(--secondary-color);
+      background: #020617;
+      /* Slate 950 */
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
     }
 
-    footer a {
-      color: #94a3b8;
-      text-decoration: none;
-      transition: color 0.2s;
+    footer a:hover,
+    .hover-white:hover {
+      color: white !important;
+      text-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
     }
 
-    footer a:hover {
-      color: white;
+    .text-white-50 {
+      color: rgba(255, 255, 255, 0.5) !important;
     }
   </style>
 </head>
@@ -173,23 +242,16 @@
     <div class="container">
       <a class="navbar-brand d-flex align-items-center gap-2" href="#">
         <img src="/assets/logo2.svg" alt="SpendWise Logo" width="40" height="40">
-        <span class="fw-bold fs-4 text-dark" style="font-family: 'Outfit', sans-serif;">SpendWise</span>
+        <span class="fw-bold fs-3 text-brand" style="font-family: 'Outfit', sans-serif;">SpendWise</span>
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
+        <span class="navbar-toggler-icon bg-secondary"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto align-items-center">
           <li class="nav-item"><a class="nav-link px-3" href="#home">Home</a></li>
           <li class="nav-item"><a class="nav-link px-3" href="#features">Features</a></li>
-          <li class="nav-item"><a class="nav-link px-3" href="#how-it-works">How It Works</a></li>
-          <li class="nav-item"><a class="nav-link px-3" href="#contact">Contact</a></li>
-          <li class="nav-item ms-lg-3">
-            <a href="app.html" class="btn btn-outline-primary btn-sm me-2">Login</a>
-          </li>
-          <li class="nav-item">
-            <a href="app.html" class="btn btn-primary btn-sm">Sign Up Free</a>
-          </li>
+          <li class="nav-item"><a class="nav-link px-3" href="#why">Why SpendWise?</a></li>
         </ul>
       </div>
     </div>
@@ -199,110 +261,102 @@
   <section id="home" class="hero-section">
     <div class="container text-center">
       <div class="row justify-content-center">
-        <div class="col-lg-8">
-          <span class="badge bg-primary bg-opacity-10 text-primary mb-3 px-3 py-2 rounded-pill fw-medium">
-            Smart Financial Tracking
-          </span>
-          <h1 class="display-3 fw-bold mb-4">
-            Master Your Finances with <span class="text-gradient">SpendWise</span>
+        <div class="col-lg-9">
+          <h1 class="display-3 fw-bold mb-4 pt-4 lh-sm text-white">
+            Master Your Finances with <span class="text-brand">SpendWise</span>
           </h1>
-          <p class="lead text-muted mb-5 px-lg-5">
+          <p class="lead text-muted mb-5 px-lg-5 fw-medium">
             Effortlessly track expenses, set budgets, and gain insights into your spending habits. Take
             control of your financial future today.
           </p>
           <div class="d-flex gap-3 justify-content-center mb-5">
             <a href="app.html" class="btn btn-primary btn-lg">Get Started Now</a>
-            <a href="#features" class="btn btn-outline-primary btn-lg">Learn More</a>
+            <a href="#features" class="btn btn-outline-primary btn-lg">Learn
+              More</a>
           </div>
         </div>
       </div>
       <!-- Mockup Placeholder -->
       <div class="row justify-content-center mt-4">
         <div class="col-lg-10">
-          <img src="https://placehold.co/1000x500/e2e8f0/64748b?text=SpendWise+Dashboard+Preview" alt="Dashboard Mockup"
-            class="img-fluid hero-img border">
+          <img src="https://placehold.co/1000x500/1e293b/94a3b8?text=SpendWise+Dashboard+Preview" alt="Dashboard Mockup"
+            class="img-fluid hero-img">
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Brands / Trust (Optional filler) -->
-  <div class="py-4 bg-white border-bottom">
-
-  </div>
-
   <!-- Features Section -->
-  <section id="features" class="py-5 bg-white">
+  <section id="features" class="py-5">
     <div class="container py-5">
       <div class="text-center mb-5">
-        <h2 class="fw-bold mb-3">Everything you need to grow</h2>
-        <p class="text-muted col-lg-6 mx-auto">SpendWise provides all the tools you need to understand your cash
-          flow and build better financial habits.</p>
+        <h2 class="display-5 fw-bold mb-3 text-white">Features</h2>
+        <p class="text-muted lead">Everything you need to manage your money effectively.</p>
       </div>
 
       <div class="row g-4">
         <!-- Feature 1 -->
         <div class="col-md-6 col-lg-4">
-          <div class="card h-100 border-0 shadow-sm p-4">
+          <div class="card h-100 p-4">
             <div class="feature-icon-wrapper">
               <i class="bi bi-receipt"></i>
             </div>
-            <h4 class="fw-bold h5">Expense Tracking</h4>
+            <h4 class="fw-bold h5 text-white">Expense Tracking</h4>
             <p class="text-muted small mb-0">Log transactions instantly. Categorize spending to see exactly
               where your money goes.</p>
           </div>
         </div>
         <!-- Feature 2 -->
         <div class="col-md-6 col-lg-4">
-          <div class="card h-100 border-0 shadow-sm p-4">
+          <div class="card h-100 p-4">
             <div class="feature-icon-wrapper">
               <i class="bi bi-piggy-bank"></i>
             </div>
-            <h4 class="fw-bold h5">Budget Management</h4>
+            <h4 class="fw-bold h5 text-white">Budget Management</h4>
             <p class="text-muted small mb-0">Set monthly limits for specific categories. Get alerts when
               you're close to overspending.</p>
           </div>
         </div>
         <!-- Feature 3 -->
         <div class="col-md-6 col-lg-4">
-          <div class="card h-100 border-0 shadow-sm p-4">
+          <div class="card h-100 p-4">
             <div class="feature-icon-wrapper">
               <i class="bi bi-graph-up"></i>
             </div>
-            <h4 class="fw-bold h5">Visual Analytics</h4>
+            <h4 class="fw-bold h5 text-white">Visual Analytics</h4>
             <p class="text-muted small mb-0">Beautiful charts and graphs help you visualize trends and
               spending patterns over time.</p>
           </div>
         </div>
         <!-- Feature 4 -->
         <div class="col-md-6 col-lg-4">
-          <div class="card h-100 border-0 shadow-sm p-4">
+          <div class="card h-100 p-4">
             <div class="feature-icon-wrapper">
               <i class="bi bi-calendar-check"></i>
             </div>
-            <h4 class="fw-bold h5">Monthly Reports</h4>
+            <h4 class="fw-bold h5 text-white">Monthly Reports</h4>
             <p class="text-muted small mb-0">Get a clear summary of your month. Compare income versus
               expenses effortlessly.</p>
           </div>
         </div>
         <!-- Feature 5 -->
         <div class="col-md-6 col-lg-4">
-          <div class="card h-100 border-0 shadow-sm p-4">
+          <div class="card h-100 p-4">
             <div class="feature-icon-wrapper">
               <i class="bi bi-lightbulb"></i>
             </div>
-            <h4 class="fw-bold h5">Smart Insights</h4>
+            <h4 class="fw-bold h5 text-white">Smart Insights</h4>
             <p class="text-muted small mb-0">Receive personalized tips and identifies unnecessary
               subscriptions or habits.</p>
           </div>
         </div>
         <!-- Feature 6 -->
         <div class="col-md-6 col-lg-4">
-          <div class="card h-100 border-0 shadow-sm p-4">
+          <div class="card h-100 p-4">
             <div class="feature-icon-wrapper">
               <i class="bi bi-shield-lock"></i>
             </div>
-            <h4 class="fw-bold h5">Secure & Private</h4>
+            <h4 class="fw-bold h5 text-white">Secure & Private</h4>
             <p class="text-muted small mb-0">Your data is encrypted and focused on your privacy. We don't
               sell your info.</p>
           </div>
@@ -311,61 +365,20 @@
     </div>
   </section>
 
-  <!-- How It Works -->
-  <section id="how-it-works" class="py-5 bg-light">
-    <div class="container py-5">
-      <div class="text-center mb-5">
-        <h2 class="fw-bold">How it works</h2>
-        <p class="text-muted">Start taking control in three simple steps.</p>
-      </div>
-
-      <div class="row g-4 text-center">
-        <div class="col-md-4">
-          <div class="p-4">
-            <div class="step-number shadow">1</div>
-            <h4 class="h5 fw-bold mb-3">Create Free Account</h4>
-            <p class="text-muted small">Sign up in seconds. No credit card required. Customize your profile
-              and preferences.</p>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="p-4 position-relative">
-            <!-- Connecting Line (Desktop) -->
-            <div class="d-none d-md-block position-absolute start-0 top-0 w-100 h-100" style="z-index:-1;">
-              <div style="border-top: 2px dashed #cbd5e1; position: absolute; top: 20px; width: 100%; left: -50%;">
-              </div>
-            </div>
-            <div class="step-number shadow">2</div>
-            <h4 class="h5 fw-bold mb-3">Add Your Expenses</h4>
-            <p class="text-muted small">Quickly log your daily spending. Use our smart categories to
-              organize transactions.</p>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="p-4">
-            <div class="step-number shadow">3</div>
-            <h4 class="h5 fw-bold mb-3">Track & Analyze</h4>
-            <p class="text-muted small">Watch your dashboard update instantly. See where you can save and
-              optimize your budget.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <!-- Benefits Section -->
-  <section class="py-5 bg-white">
+  <section id="why" class="py-5 bg-dark-mesh">
     <div class="container py-5">
       <div class="row align-items-center">
         <div class="col-lg-6 mb-4 mb-lg-0">
-          <h2 class="fw-bold mb-4">Why choose SpendWise?</h2>
+          <span class="text-gradient fw-bold text-uppercase ls-1 mb-2 d-block">Why Us?</span>
+          <h2 class="display-5 fw-bold mb-4 text-white">Why choose SpendWise?</h2>
 
           <div class="d-flex mb-4">
             <div class="flex-shrink-0">
               <i class="bi bi-check-circle-fill text-primary fs-4"></i>
             </div>
             <div class="ms-3">
-              <h5 class="fw-bold">Save valuable time</h5>
+              <h5 class="fw-bold text-white">Save valuable time</h5>
               <p class="text-muted small">Stop wrestling with spreadsheets. Our intuitive interface makes
                 logging seconds of work.</p>
             </div>
@@ -376,7 +389,7 @@
               <i class="bi bi-check-circle-fill text-primary fs-4"></i>
             </div>
             <div class="ms-3">
-              <h5 class="fw-bold">Automatic Syncing</h5>
+              <h5 class="fw-bold text-white">Automatic Syncing</h5>
               <p class="text-muted small">Access your data from any device. Secure cloud storage keeps
                 everything safe.</p>
             </div>
@@ -387,92 +400,65 @@
               <i class="bi bi-check-circle-fill text-primary fs-4"></i>
             </div>
             <div class="ms-3">
-              <h5 class="fw-bold">Better decisions</h5>
+              <h5 class="fw-bold text-white">Better decisions</h5>
               <p class="text-muted small">Make informed choices about your money with real-time analytics.
               </p>
             </div>
           </div>
         </div>
         <div class="col-lg-6">
-          <div class="bg-light rounded-4 p-5 text-center">
-            <img src="https://placehold.co/500x400/f1f5f9/94a3b8?text=Analytics+Illustration"
-              alt="Benefits Illustration" class="img-fluid rounded-3 shadow-sm">
+          <div class="p-5 text-center shadow-lg border border-secondary rounded-5"
+            style="background: var(--bg-surface);">
+            <img src="https://placehold.co/500x400/334155/94a3b8?text=Analytics+Illustration"
+              alt="Benefits Illustration" class="img-fluid rounded-4 shadow-sm opacity-75">
           </div>
         </div>
       </div>
     </div>
   </section>
 
-
-
   <!-- Footer -->
   <footer class="text-white pt-5 pb-4">
     <div class="container text-center text-md-start">
-      <div class="row text-center text-md-start">
+      <div class="row justify-content-between align-items-center">
         <!-- Brand -->
-        <div class="col-md-3 col-lg-3 col-xl-3 mx-auto mt-3">
-          <h5 class="text-uppercase mb-4 fw-bold d-flex align-items-center gap-2">
+        <div class="col-md-6 col-lg-5 mt-3">
+          <h5
+            class="text-uppercase mb-3 fw-bold d-flex align-items-center justify-content-center justify-content-md-start gap-2 text-white">
             <img src="/assets/logo2.svg" alt="Logo" width="30" height="30"> SpendWise
           </h5>
-          <p class="text-muted small">
+          <p class="text-white-50 small mb-0">
             Your personal finance companion. Track, analyze, and grow your wealth with our simple yet
             powerful tools.
           </p>
         </div>
 
-        <!-- Products -->
-        <div class="col-md-2 col-lg-2 col-xl-2 mx-auto mt-3">
-          <h6 class="text-uppercase mb-4 fw-bold text-primary">Product</h6>
-          <p><a href="#features">Features</a></p>
-          <p><a href="#">Pricing</a></p>
-          <p><a href="#">Security</a></p>
-          <p><a href="#">Updates</a></p>
-        </div>
-
-        <!-- Useful links -->
-        <div class="col-md-3 col-lg-2 col-xl-2 mx-auto mt-3">
-          <h6 class="text-uppercase mb-4 fw-bold text-primary">Company</h6>
-          <p><a href="#">About Us</a></p>
-          <p><a href="#">Careers</a></p>
-          <p><a href="#">Blog</a></p>
-          <p><a href="#contact">Contact</a></p>
-        </div>
-
-        <!-- Contact -->
-        <div class="col-md-4 col-lg-3 col-xl-3 mx-auto mt-3">
-          <h6 class="text-uppercase mb-4 fw-bold text-primary">Contact</h6>
-          <p><i class="bi bi-envelope me-2"></i> support@spendwise.com</p>
-          <p><i class="bi bi-geo-alt me-2"></i> 123 Finance St, NY</p>
-
-          <!-- Socials -->
-          <div class="mt-4">
-            <a href="#"
-              class="btn btn-outline-light btn-sm btn-floating m-1 rounded-circle border-0 bg-white bg-opacity-10"><i
-                class="bi bi-facebook"></i></a>
-            <a href="#"
-              class="btn btn-outline-light btn-sm btn-floating m-1 rounded-circle border-0 bg-white bg-opacity-10"><i
-                class="bi bi-twitter"></i></a>
-            <a href="#"
-              class="btn btn-outline-light btn-sm btn-floating m-1 rounded-circle border-0 bg-white bg-opacity-10"><i
-                class="bi bi-google"></i></a>
-            <a href="#"
-              class="btn btn-outline-light btn-sm btn-floating m-1 rounded-circle border-0 bg-white bg-opacity-10"><i
-                class="bi bi-instagram"></i></a>
+        <!-- Socials -->
+        <div class="col-md-6 col-lg-4 mt-3">
+          <div class="d-flex justify-content-center justify-content-md-end gap-3">
+            <a href="https://github.com/Sanmati-u-s/Personal-Expenses-Tracker"
+              class="text-white text-decoration-none hover-white" aria-label="Github">
+              <i class="bi bi-github fs-4"></i>
+            </a>
+            <a href="https://www.linkedin.com/in/sanmati-shinganmakki-708569314/"
+              class="text-white text-decoration-none hover-white" aria-label="LinkedIn">
+              <i class="bi bi-linkedin fs-4"></i>
+            </a>
+            <a href="mailto:sanmati.shinganmakki@gmail.com" class="text-white text-decoration-none hover-white"
+              aria-label="Gmail">
+              <i class="bi bi-envelope-fill fs-4"></i>
+            </a>
           </div>
         </div>
       </div>
 
-      <hr class="my-4 border-secondary">
+      <hr class="my-4 border-secondary opacity-25">
 
-      <div class="row d-flex align-items-center">
-        <div class="col-md-7 col-lg-8 text-center text-md-start">
-          <div class="p-3 text-muted small">
+      <div class="row align-items-center">
+        <div class="col-12 text-center text-md-start">
+          <div class="text-white-50 small">
             © 2026 SpendWise. All rights reserved.
           </div>
-        </div>
-        <div class="col-md-5 col-lg-4 ml-lg-0 text-center text-md-end">
-          <a href="#" class="text-muted small me-3">Privacy Policy</a>
-          <a href="#" class="text-muted small">Terms of Service</a>
         </div>
       </div>
     </div>
