@@ -646,7 +646,13 @@ function showDashboard(user) {
     const isOverBudget = currentMonthExpenses > limit;
 
     // Update Text
-    document.getElementById('budget-status-text').textContent = `Spent: ₹ ${currentMonthExpenses.toFixed(2)} / ₹ ${limit.toFixed(2)}`;
+    const remaining = Math.max(limit - currentMonthExpenses, 0);
+    document.getElementById('budget-status-text').innerHTML = `
+        <span style="display: block; margin-bottom: 2px;">Spent: ₹ ${currentMonthExpenses.toFixed(2)} / ₹ ${limit.toFixed(2)}</span>
+        <span style="font-size: 0.85rem; color: ${remaining < (limit * 0.2) ? 'var(--danger-color)' : 'var(--success-color)'};">
+            Remaining: ₹ ${remaining.toFixed(2)}
+        </span>
+    `;
     document.getElementById('budget-percentage').textContent = `${Math.round((currentMonthExpenses / limit) * 100)}%`;
 
     // Update Bar Color & Width

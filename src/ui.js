@@ -75,14 +75,13 @@ export const renderDashboard = (user) => {
       <header>
         <div style="display: flex; align-items: center; gap: 1rem;">
           <img src="/assets/logo2.svg" alt="SpendWise Logo" class="brand-logo" style="width: 50px; height: 50px; margin: 0;" />
-          <div>
-            <h1 class="brand-name" style="font-size: 2rem; text-align: left; margin-bottom: 0;">SpendWise</h1>
-            <p style="color: var(--text-secondary); margin: 0; font-size: 1rem; font-weight: 500;">Welcome, ${user.displayName || 'User'}</p>
+          <div style="display: flex; flex-direction: column; align-items: flex-start;">
+            <h1 class="brand-name" style="font-size: 2rem; text-align: left; margin-bottom: 0; line-height: 1.1;">SpendWise</h1>
+             <p style="font-size: 0.9rem; font-weight: 500; color: var(--primary-color); margin: 0 0 0.2rem 0; letter-spacing: 0.5px;">Smart tracking. Better decisions!</p>
+            <p style="color: var(--text-secondary); margin: 0; font-size: 0.95rem; font-weight: 500;">Welcome, ${user.displayName || 'User'}</p>
           </div>
         </div>
-                <div class="header-tagline">
-            <p style="font-size: 1rem; font-weight: 500;">Smart tracking. Better decisions!</p>
-        </div>
+        
         <div class="header-actions">
           <span class="theme-label" style="font-size: 0.9rem; margin-right: 0.5rem; font-weight: 600;">Dark Mode</span>
           <label class="theme-switch" title="Toggle Theme">

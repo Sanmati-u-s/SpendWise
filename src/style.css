@@ -376,11 +376,14 @@ input:checked+.slider:before {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
-#logout-btn:hover {
+#logout-btn:hover,
+#close-modal-btn:hover,
+#close-budget-modal-btn:hover {
   background: #fef2f2;
   color: var(--danger-color);
   border-color: var(--danger-color);
   box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+  transform: translateY(-2px);
 }
 
 [data-theme="dark"] .btn-secondary {
