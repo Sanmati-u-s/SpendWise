@@ -10,7 +10,7 @@ export const renderLogin = () => {
       </div>
       <div class="auth-container">
         <div class="brand-header">
-            <p class="welcome-text">Welcome to</p>
+            <p class="welcome-text">Welcome Back</p>
             <img src="/assets/logo2.svg" alt="SpendWise Logo" class="brand-logo" />
             <h1 class="brand-name">SpendWise</h1>
         </div>
@@ -44,8 +44,8 @@ export const renderSignup = () => {
       </div>
       <div class="auth-container">
         <div class="brand-header">
-             <p class="welcome-text">Join</p>
-             <img src="/assets/logo.svg" alt="SpendWise Logo" class="brand-logo" />
+             <p class="welcome-text">Welcome To</p>
+             <img src="/assets/logo2.svg" alt="SpendWise Logo" class="brand-logo" />
              <h1 class="brand-name">SpendWise</h1>
         </div>
         <form id="signup-form">
@@ -77,7 +77,7 @@ export const renderDashboard = (user) => {
           <img src="/assets/logo2.svg" alt="SpendWise Logo" class="brand-logo" style="width: 50px; height: 50px; margin: 0;" />
           <div style="display: flex; flex-direction: column; align-items: flex-start;">
             <h1 class="brand-name" style="font-size: 2rem; text-align: left; margin-bottom: 0; line-height: 1.1;">SpendWise</h1>
-             <p style="font-size: 0.9rem; font-weight: 500; color: var(--primary-color); margin: 0 0 0.2rem 0; letter-spacing: 0.5px;">Smart tracking. Better decisions!</p>
+             <p style="font-size: 0.9rem; font-weight: 500; color: #569aceff; margin: 0 0 0.2rem 0; letter-spacing: 0.5px;">Smart tracking. Better decisions!</p>
             <p style="color: var(--text-secondary); margin: 0; font-size: 0.95rem; font-weight: 500;">Welcome, ${user.displayName || 'User'}</p>
           </div>
         </div>
