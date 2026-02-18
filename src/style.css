@@ -113,7 +113,6 @@ h3 {
   /* Reduced from 80px */
   height: 50px;
   margin: 0.5rem 0;
-  filter: drop-shadow(0 4px 6px rgba(59, 130, 246, 0.4));
   animation: floatLogo 3s ease-in-out infinite;
 }
 
@@ -341,19 +340,41 @@ input:checked+.slider:before {
   font-weight: 800;
 }
 
-#add-expense-btn {
-  padding: 1rem 2rem;
-  font-size: 1.1rem;
-  background: #6366f1;
-  /* Solid Indigo - No Gradient */
+#add-expense-btn,
+#add-income-btn {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
   color: white;
-  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.5);
-  animation: none;
-  /* No pulse animation */
-  transition: transform 0.2s, box-shadow 0.2s;
-  border: none;
+  transition: transform 0.2s, box-shadow 0.2s, filter 0.2s;
+  border: 2px solid black;
   border-radius: var(--radius);
   cursor: pointer;
+}
+
+#add-expense-btn {
+  background: var(--danger-color);
+  /* Red for Expense */
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+}
+
+#add-income-btn {
+  background: #059669;
+  /* Emerald 600 - Less bright/neon than #22c55e */
+  box-shadow: 0 4px 15px rgba(5, 150, 105, 0.4);
+}
+
+#add-expense-btn:hover,
+#add-income-btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+}
+
+#add-expense-btn:hover {
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5);
+}
+
+#add-income-btn:hover {
+  box-shadow: 0 6px 20px rgba(5, 150, 105, 0.5);
 }
 
 .btn-secondary {
@@ -379,7 +400,6 @@ input:checked+.slider:before {
 #logout-btn:hover,
 #close-modal-btn:hover,
 #close-budget-modal-btn:hover {
-  background: #fef2f2;
   color: var(--danger-color);
   border-color: var(--danger-color);
   box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
@@ -937,4 +957,88 @@ input[type="date"] {
 /* Dark mode subtle hover */
 [data-theme="dark"] .category-list-item:hover {
   background: rgba(255, 255, 255, 0.03);
+}
+
+/* Budget Controls Styling */
+.budget-select {
+  padding: 0.4rem 0.75rem;
+  /* Slightly larger touch target */
+  font-size: 0.9rem;
+  font-family: inherit;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-color);
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.budget-select:hover {
+  background-color: var(--surface-color);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.budget-select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+}
+
+.btn-sm {
+  padding: 0.4rem 1rem !important;
+  /* Override btn-secondary */
+  font-size: 0.85rem !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  /* Ensure clickability */
+}
+
+/* Dark mode overrides */
+[data-theme="dark"] .budget-select {
+  background-color: rgba(15, 23, 42, 0.5);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .budget-select:hover {
+  background-color: rgba(30, 41, 59, 0.8);
+  border-color: #60a5fa;
+}
+
+[data-theme="dark"] #add-expense-btn,
+[data-theme="dark"] #add-income-btn {
+  border-color: white;
+}
+
+/* Category Filtering Styling */
+.category-list-item {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 0.5rem;
+}
+
+.category-list-item:hover {
+  background-color: var(--background-color);
+  transform: translateX(4px);
+}
+
+.category-list-item.selected-category {
+  background-color: var(--primary-color);
+  color: white;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.category-list-item.selected-category .text-secondary {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.category-list-item.selected-category .item-icon {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+}
+
+[data-theme="dark"] .category-list-item.selected-category {
+  background-color: var(--primary-color);
 }

@@ -142,10 +142,10 @@ export const renderDashboard = (user) => {
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                     <h3 style="margin: 0;">Monthly Budget</h3>
                     <div style="display: flex; gap: 0.5rem; align-items: center;">
-                        <select id="budget-month-select" style="padding: 0.25rem; font-size: 0.8rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color);">
+                        <select id="budget-month-select" class="budget-select">
                             <!-- Options populated by JS -->
                         </select>
-                        <button id="edit-budget-btn" class="btn-secondary" style="padding: 0.25rem 0.75rem; font-size: 0.8rem;">Set Budget</button>
+                        <button id="edit-budget-btn" class="btn-secondary btn-sm">Set Budget</button>
                     </div>
                 </div>
                 <div style="margin-bottom: 0.5rem; display: flex; justify-content: space-between; font-weight: 500; color: var(--text-secondary);">
@@ -185,8 +185,8 @@ export const renderDashboard = (user) => {
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
           <h3>Recent Transactions</h3>
-          <div style="display: flex; gap: 0.5rem;">
-            <button id="add-income-btn" type="button" style="background: var(--success-color); border: none; color: white; padding: 1rem 2rem; border-radius: var(--radius); font-size: 1.1rem; cursor: pointer; box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4);">Add Income</button>
+            <div style="display: flex; gap: 0.5rem;">
+            <button id="add-income-btn" type="button">Add Income</button>
             <button id="add-expense-btn" type="button">Add Expense</button>
           </div>
         </div>
@@ -245,10 +245,9 @@ export const renderDashboard = (user) => {
       <div id="edit-budget-modal" class="modal">
         <div class="modal-content" style="max-width: 400px;">
             <h3>Set Monthly Budget</h3>
-            <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.95rem; line-height: 1.5;">Set a spending limit for a specific month to track your financial goals.</p>
             <form id="edit-budget-form">
                 <div class="form-group">
-                    <label class="form-label" style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem;">Select Month</label>
+                    <label class="form-label" style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem;">Month</label>
                     <input type="month" name="month" required style="width: 100%; box-sizing: border-box;" />
                 </div>
                 <div class="form-group">
