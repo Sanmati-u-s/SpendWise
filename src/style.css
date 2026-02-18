@@ -607,12 +607,15 @@ input:checked+.slider:before {
   justify-content: center;
   z-index: 1000;
   opacity: 0;
+  visibility: hidden;
+  /* Ensure it doesn't block clicks */
   pointer-events: none;
-  transition: opacity 0.3s;
+  transition: opacity 0.3s, visibility 0.3s;
 }
 
 .modal.active {
   opacity: 1;
+  visibility: visible;
   pointer-events: auto;
 }
 

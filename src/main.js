@@ -690,6 +690,16 @@ function showDashboard(user) {
         budgetForm.limit.value = '';
       }
     });
+
+    // Update limit field when month is changed inside the modal
+    budgetForm.month.addEventListener('change', (e) => {
+      const selectedMonth = e.target.value;
+      if (allBudgets[selectedMonth]) {
+        budgetForm.limit.value = allBudgets[selectedMonth];
+      } else {
+        budgetForm.limit.value = '';
+      }
+    });
   }
 
   if (closeBudgetBtn) {
