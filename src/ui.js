@@ -134,10 +134,7 @@ export const renderDashboard = (user) => {
           </div>
         </div>
         
-        <div class="dashboard-grid">
-          <!-- Main Column -->
-          <div class="dashboard-main">
-            <!-- Budget Overview -->
+          <!-- Budget Overview -->
             <div class="budget-overview" style="background: var(--card-bg); padding: 1.5rem; border-radius: var(--radius); margin-bottom: 2rem; box-shadow: var(--shadow);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                     <h3 style="margin: 0;">Monthly Budget</h3>
@@ -158,8 +155,8 @@ export const renderDashboard = (user) => {
                 <p id="budget-warning" style="color: var(--danger-color); font-size: 0.9rem; margin-top: 0.5rem; display: none;">⚠️ You have exceeded your monthly budget!</p>
             </div>
 
-            <!-- Charts -->
-            <div class="charts-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+            <!-- Charts - Horizontal Row -->
+            <div class="charts-row">
               <div class="chart-card">
                 <h3>Category Distribution</h3>
                 <canvas id="pie-chart"></canvas>
@@ -168,32 +165,39 @@ export const renderDashboard = (user) => {
                 <h3>Monthly Trends (Last 12 Months)</h3>
                 <canvas id="bar-chart"></canvas>
               </div>
-              <div class="chart-card" style="grid-column: 1 / -1;">
+              <div class="chart-card">
                 <h3>Income vs Expenses</h3>
                 <canvas id="income-expense-chart"></canvas>
               </div>
             </div>
-          </div>
 
-          <!-- Sidebar Column -->
-          <div class="dashboard-sidebar">
-             <div id="category-breakdown">
-               <!-- Category stats will be injected here -->
-             </div>
-          </div>
-        </div>
+            <!-- Lower Section: Breakdown + Transactions -->
+            <div class="lower-content">
+                <!-- Breakdown Column -->
+                <div class="breakdown-column">
+                   <div id="category-breakdown">
+                     <!-- Category stats will be injected here -->
+                   </div>
+                </div>
 
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-          <h3>Recent Transactions</h3>
-            <div style="display: flex; gap: 0.5rem;">
-            <button id="add-income-btn" type="button">Add Income</button>
-            <button id="add-expense-btn" type="button">Add Expense</button>
-          </div>
-        </div>
-        
-        <div id="expenses-list">
-          <p>Loading expenses...</p>
-        </div>
+                <!-- Transactions Column -->
+                <div class="transactions-column">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                      <div style="display: flex; align-items: center;">
+                        <h3 class="m-0">Recent Transactions</h3>
+                        <div id="filter-status" style="margin-left: 1rem;"></div>
+                      </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                        <button id="add-income-btn" type="button">Add Income</button>
+                        <button id="add-expense-btn" type="button">Add Expense</button>
+                      </div>
+                    </div>
+                    
+                    <div id="expenses-list">
+                      <p>Loading expenses...</p>
+                    </div>
+                </div>
+            </div>
       </main>
       
       <!-- Add Expense/Income Modal -->

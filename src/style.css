@@ -439,22 +439,56 @@ input:checked+.slider:before {
   margin-bottom: 2rem;
 }
 
+/* Expense List Item - Grid Layout */
 .expense-item {
   background: var(--surface-color);
   margin-bottom: 0;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border-left: 5px solid transparent;
   animation: slideIn 0.4s ease-out forwards;
   opacity: 0;
-  display: flex;
-  justify-content: space-between;
+
+  display: grid;
+  grid-template-columns: auto 1fr auto auto auto;
+  /* Icon | Details | Badge | Amount | Actions */
+  gap: 1.5rem;
   align-items: center;
-  padding: 1.25rem 1.5rem;
+
+  padding: 1rem 1.5rem;
+  /* Slightly more compact vertical padding */
   border-radius: var(--radius);
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-sm);
   position: relative;
   overflow: hidden;
+}
+
+/* Mobile Stack */
+@media (max-width: 576px) {
+  .expense-item {
+    grid-template-columns: auto 1fr auto;
+    grid-template-rows: auto auto;
+    gap: 0.5rem 1rem;
+  }
+
+  .expense-details {
+    grid-column: 2 / -1;
+  }
+
+  .expense-category-badge {
+    grid-column: 1 / 2;
+    grid-row: 2;
+    justify-self: center;
+  }
+
+  .expense-amount {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .expense-actions {
+    grid-column: 3;
+    grid-row: 2;
+  }
 }
 
 .expense-item:nth-child(even) {
@@ -478,45 +512,123 @@ input:checked+.slider:before {
 }
 
 .expense-item:hover {
-  transform: translateY(-4px) scale(1.01);
-  border-left-color: var(--primary-color);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary-color);
 }
 
-.expense-info h4 {
-  margin: 0;
-  font-size: 1.2rem;
+/* New Elements Styling */
+.expense-icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+/* Dark Mode Icon Visibility Fix */
+[data-theme="dark"] .expense-icon-box {
+  color: #fff !important;
+  /* Force white icon */
+  /* Increase background opacity for better contrast against dark theme */
+  --bs-bg-opacity: 0.2 !important;
+}
+
+[data-theme="dark"] .expense-icon-box i {
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  /* Subtle shadow to pop */
+}
+
+.expense-details {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  /* For text truncation */
+}
+
+.expense-title {
+  font-weight: 600;
   color: var(--text-color);
+  margin-bottom: 0.2rem;
+  font-size: 1.05rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.expense-category {
-  background: var(--primary-gradient);
-  color: white;
-  padding: 0.3rem 0.8rem;
+.expense-date {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.expense-category-badge {
+  background: var(--background-color);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  padding: 0.35rem 0.8rem;
   border-radius: 2rem;
   font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.05em;
   text-transform: uppercase;
-  box-shadow: 0 2px 4px rgba(99, 102, 241, 0.3);
-  display: inline-block;
-  margin-top: 0.5rem;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
 }
 
 .expense-amount {
-  font-size: 1.5rem;
+  font-size: 1.1rem;
+  /* Slightly smaller than before to fit better */
   font-weight: 700;
-  color: var(--text-color);
+  white-space: nowrap;
+  text-align: right;
+  min-width: 80px;
 }
 
 /* Edit/Delete Buttons */
 .expense-actions {
   display: flex;
-  align-items: center;
-  margin-top: 0.5rem;
-  justify-content: flex-end;
-  /* Align icons to the right on mobile if wrapped */
-  margin-left: 1rem;
+  gap: 0.5rem;
+  opacity: 0;
+  /* Hidden by default */
+  transform: translateX(10px);
+  transition: all 0.2s ease;
 }
+
+.expense-item:hover .expense-actions {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* On mobile, always show actions or handle differently? Keeping hover for now as tap simulates hover often */
+
+.btn-icon {
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  background: var(--background-color);
+  color: var(--text-secondary);
+  transition: all 0.2s;
+}
+
+.btn-edit:hover {
+  background: #f97316;
+  color: white;
+}
+
+.btn-delete:hover {
+  background: #ef4444;
+  color: white;
+}
+
 
 
 
@@ -572,7 +684,12 @@ input:checked+.slider:before {
 }
 
 /* Charts */
-.charts-container {
+/* Layout Restructure - Charts */
+.charts-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  /* 3 Equal Columns */
+  gap: 1.5rem;
   margin-bottom: 2rem;
 }
 
@@ -583,8 +700,12 @@ input:checked+.slider:before {
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-sm);
   text-align: center;
-  /* Center align chart titles */
   transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  min-height: 320px;
+  /* Ensure uniform height */
 }
 
 .chart-card:hover {
@@ -596,13 +717,52 @@ input:checked+.slider:before {
   margin-bottom: 1rem;
   font-size: 1rem;
   color: var(--text-secondary);
+  height: 2.5em;
+  /* Fixed height for titles to align charts */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-#bar-chart {
-  height: 250px !important;
-  /* Reduced height */
+.chart-card canvas {
+  max-height: 200px !important;
+  /* Force smaller height */
   width: 100% !important;
+  margin: auto;
 }
+
+/* Lower Section - Breakdown & Transactions side-by-side */
+.lower-content {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  /* 1/3 Breakdown, 2/3 List */
+  gap: 2rem;
+  align-items: start;
+}
+
+.breakdown-column {
+  position: sticky;
+  top: 1rem;
+  height: fit-content;
+}
+
+/* Mobile Responsiveness for new layout */
+@media (max-width: 992px) {
+  .charts-row {
+    grid-template-columns: 1fr;
+    /* Stack on smaller screens */
+  }
+
+  .lower-content {
+    grid-template-columns: 1fr;
+    /* Stack breakdown above list */
+  }
+
+  .breakdown-column {
+    position: static;
+  }
+}
+
 
 #pie-chart {
   max-height: 250px;

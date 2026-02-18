@@ -214,6 +214,7 @@ function showDashboard(user) {
   // Chart Instances
   let pieChart = null;
   let barChart = null;
+  let incomeExpenseChart = null;
 
   const updateCharts = (currentExpenses, allExpenses) => {
     const pieCtx = document.getElementById('pie-chart');
@@ -287,20 +288,32 @@ function showDashboard(user) {
       }
     });
 
-    // 2. Bar Chart Logic (Uses LAST 12 MONTHS regardless of filter)
+    // 2. Bar Chart Logic (last 12 months from LATEST transaction or Today)
     const monthlyTotals = {};
-    const today = new Date();
+
+    // Find latest date in expenses to determine the 12-month window
+    let latestDate = new Date();
+    if (allExpenses.length > 0) {
+      const maxDate = new Date(Math.max(...allExpenses.map(e => new Date(e.date))));
+      if (maxDate > latestDate) {
+        latestDate = maxDate;
+      }
+    }
+
     const last12Months = [];
 
     for (let i = 11; i >= 0; i--) {
-      const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+      const d = new Date(latestDate.getFullYear(), latestDate.getMonth() - i, 1);
       const monthYear = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-      const label = d.toLocaleDateString('default', { month: 'short' });
+      const label = d.toLocaleDateString('default', { month: 'short', year: '2-digit' }); // Added year for clarity
       monthlyTotals[monthYear] = 0;
       last12Months.push({ key: monthYear, label: label });
     }
 
     allExpenses.forEach(exp => {
+      // Only count expenses for Monthly Spending
+      if (exp.type === 'income') return;
+
       const d = new Date(exp.date);
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
       if (monthlyTotals.hasOwnProperty(key)) {
@@ -348,6 +361,106 @@ function showDashboard(user) {
         plugins: { legend: { display: false } }
       }
     });
+
+    // 3. Income vs Expenses Chart Logic (Line Chart)
+    const incomeExpenseCtx = document.getElementById('income-expense-chart');
+    if (incomeExpenseCtx) {
+      const monthlyIncome = {};
+      const monthlyExpenses = {};
+
+      // Initialize with 0 for last 12 months
+      last12Months.forEach(m => {
+        monthlyIncome[m.key] = 0;
+        monthlyExpenses[m.key] = 0;
+      });
+
+      allExpenses.forEach(trans => {
+        const d = new Date(trans.date);
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+
+        if (monthlyIncome.hasOwnProperty(key)) {
+          if (trans.type === 'income') {
+            monthlyIncome[key] += trans.amount;
+          } else {
+            monthlyExpenses[key] += trans.amount;
+          }
+        }
+      });
+
+      const incomeExpenseData = {
+        labels: last12Months.map(m => m.label),
+        datasets: [
+          {
+            label: 'Income',
+            data: last12Months.map(m => monthlyIncome[m.key]),
+            borderColor: '#10b981', // Success Green
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            tension: 0.4,
+            fill: true,
+            pointRadius: 4,
+            pointHoverRadius: 6
+          },
+          {
+            label: 'Expenses',
+            data: last12Months.map(m => monthlyExpenses[m.key]),
+            borderColor: '#ef4444', // Danger Red
+            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            tension: 0.4,
+            fill: true,
+            pointRadius: 4,
+            pointHoverRadius: 6
+          }
+        ]
+      };
+
+      if (incomeExpenseChart) incomeExpenseChart.destroy();
+      incomeExpenseChart = new Chart(incomeExpenseCtx, {
+        type: 'line',
+        data: incomeExpenseData,
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: 'index',
+            intersect: false,
+          },
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: {
+                usePointStyle: true,
+                font: { family: "'Outfit', sans-serif" }
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function (context) {
+                  let label = context.dataset.label || '';
+                  if (label) {
+                    label += ': ';
+                  }
+                  if (context.parsed.y !== null) {
+                    label += new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(context.parsed.y);
+                  }
+                  return label;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { font: { family: "'Outfit', sans-serif" } }
+            },
+            y: {
+              beginAtZero: true,
+              grid: { color: document.documentElement.getAttribute('data-theme') === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' },
+              ticks: { font: { family: "'Outfit', sans-serif" } }
+            }
+          }
+        }
+      });
+    }
   };
 
   // State for filtering
@@ -384,9 +497,9 @@ function showDashboard(user) {
     if (incomeEl) incomeEl.textContent = `₹ ${incomeTotal.toFixed(2)}`;
     if (expensesEl) expensesEl.textContent = `₹ ${expenseTotal.toFixed(2)}`;
 
-    // Update Charts (Based on Date Filter - ONLY Expenses)
+    // Update Charts (Based on Date Filter - ONLY Expenses for Pie, ALL for Line/Bar)
     const expenseOnlyData = dateFilteredExpenses.filter(t => t.type !== 'income');
-    updateCharts(expenseOnlyData, allExpenses.filter(t => t.type !== 'income'));
+    updateCharts(expenseOnlyData, allExpenses);
 
     // 2. Filter by Category (Secondary Filter for List)
     let listData = dateFilteredExpenses;
@@ -450,21 +563,40 @@ function showDashboard(user) {
 
       const el = document.createElement('div');
       el.className = 'expense-item';
-      // Add border color based on type
-      el.style.borderLeftColor = isIncome ? 'var(--success-color)' : 'var(--danger-color)';
+
+      // Icon & Color Logic (Reused from breakdown for consistency)
+      let colorClass = 'bg-secondary';
+      let iconClass = 'bi-wallet2';
+      const lowerCat = expense.category.toLowerCase();
+
+      if (lowerCat.includes('food')) { iconClass = 'bi-basket'; colorClass = 'bg-warning'; }
+      else if (lowerCat.includes('transport')) { iconClass = 'bi-car-front'; colorClass = 'bg-info'; }
+      else if (lowerCat.includes('utility') || lowerCat.includes('bill')) { iconClass = 'bi-lightning-charge'; colorClass = 'bg-warning'; }
+      else if (lowerCat.includes('game') || lowerCat.includes('entertainment')) { iconClass = 'bi-controller'; colorClass = 'bg-primary'; }
+      else if (lowerCat.includes('health')) { iconClass = 'bi-heart-pulse'; colorClass = 'bg-danger'; }
+      else if (lowerCat.includes('shop')) { iconClass = 'bi-bag'; colorClass = 'bg-primary'; }
+      else if (lowerCat.includes('home') || lowerCat.includes('rent')) { iconClass = 'bi-house-door'; colorClass = 'bg-info'; }
+      else if (isIncome) { iconClass = 'bi-cash-coin'; colorClass = 'bg-success'; }
 
       el.innerHTML = `
-        <div class="expense-info">
-          <h4>${expense.description}</h4>
-          <p class="date">${new Date(expense.date).toLocaleDateString('en-GB')}</p>
-          <span class="expense-category">${emoji} ${expense.category}</span>
+        <div class="expense-icon-box ${colorClass} bg-opacity-10 text-body">
+            <i class="bi ${iconClass}"></i>
         </div>
-        <div class="expense-right">
-          <span class="expense-amount ${amountClass}">${sign} Rs. ${expense.amount.toFixed(2)}</span>
-          <div class="expense-actions">
-            <button class="btn-icon btn-edit" title="Edit">✎</button>
-            <button class="btn-icon btn-delete" title="Delete">🗑</button>
-          </div>
+        
+        <div class="expense-details">
+            <div class="expense-title">${expense.description}</div>
+            <div class="expense-date">${new Date(expense.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</div>
+        </div>
+
+        <div class="expense-category-badge">
+            ${expense.category}
+        </div>
+
+        <div class="expense-amount ${amountClass}">${sign} ₹ ${expense.amount.toFixed(2)}</div>
+        
+        <div class="expense-actions">
+            <button class="btn-icon btn-edit" title="Edit"><i class="bi bi-pencil-fill" style="font-size: 0.8rem;"></i></button>
+            <button class="btn-icon btn-delete" title="Delete"><i class="bi bi-trash-fill" style="font-size: 0.8rem;"></i></button>
         </div>
       `;
 
@@ -501,6 +633,25 @@ function showDashboard(user) {
 
       listContainer.appendChild(el);
     });
+
+    // Handle Filter Status / Back Button in Header
+    const filterStatusContainer = document.getElementById('filter-status');
+    if (filterStatusContainer) {
+      filterStatusContainer.innerHTML = ''; // Clear previous
+      if (selectedCategoryFilter) {
+        const clearBtn = document.createElement('button');
+        clearBtn.className = 'btn-secondary btn-sm';
+        clearBtn.style.padding = '0.2rem 0.6rem';
+        clearBtn.style.fontSize = '0.75rem';
+        clearBtn.innerHTML = '<i class="bi bi-x-circle me-1"></i> ' + selectedCategoryFilter;
+        clearBtn.title = 'Clear Filter';
+        clearBtn.addEventListener('click', () => {
+          selectedCategoryFilter = null;
+          renderExpenses();
+        });
+        filterStatusContainer.appendChild(clearBtn);
+      }
+    }
 
     // Render Category Breakdown (Expenses Only) - NEW PRO STYLE
     const categoryContainer = document.getElementById('category-breakdown');
@@ -552,7 +703,7 @@ function showDashboard(user) {
                     <div class="item-icon ${colorClass} bg-opacity-10 text-body p-2 rounded" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
                          <i class="bi ${iconClass}"></i>
                     </div>
-                    <span class="fw-medium">${category}</span>
+                    <span class="expense-category-badge" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">${category}</span>
                 </div>
                 <div class="text-end">
                     <div class="fw-bold">₹ ${catTotal.toFixed(2)}</div>
@@ -571,19 +722,6 @@ function showDashboard(user) {
       headerDiv.className = 'd-flex justify-content-between align-items-center mb-3';
       headerDiv.innerHTML = `<h3 class="m-0">Expense Breakdown</h3>`;
 
-      if (selectedCategoryFilter) {
-        const clearBtn = document.createElement('button');
-        clearBtn.className = 'btn-secondary btn-sm';
-        clearBtn.style.fontSize = '0.75rem';
-        clearBtn.style.padding = '0.2rem 0.6rem';
-        clearBtn.textContent = 'Clear Filter';
-        clearBtn.addEventListener('click', (e) => {
-          e.stopPropagation(); // Prevent bubbling if needed
-          selectedCategoryFilter = null;
-          renderExpenses();
-        });
-        headerDiv.appendChild(clearBtn);
-      }
 
       card.appendChild(headerDiv);
       card.appendChild(categoryList);
