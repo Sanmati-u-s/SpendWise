@@ -350,24 +350,27 @@ function showDashboard(user) {
     });
   };
 
+  // State for filtering
+  let selectedCategoryFilter = null;
+
   const renderExpenses = () => {
     const filterValue = filterSelect.value;
-    let filteredExpenses = allExpenses;
+    let dateFilteredExpenses = allExpenses;
 
+    // 1. Filter by Date (Base Filter)
     if (filterValue !== 'all') {
-      filteredExpenses = allExpenses.filter(exp => {
-        // exp.date is YYYY-MM-DD. filterValue is YYYY-MM.
+      dateFilteredExpenses = allExpenses.filter(exp => {
         return exp.date.startsWith(filterValue);
       });
     }
 
-    // Calculate Totals
-    const incomeTotal = filteredExpenses
+    // Calculate Totals (Based on Date Filter)
+    const incomeTotal = dateFilteredExpenses
       .filter(t => t.type === 'income')
       .reduce((sum, t) => sum + parseFloat(t.amount || 0), 0);
 
-    const expenseTotal = filteredExpenses
-      .filter(t => t.type !== 'income') // Default to expense if missing
+    const expenseTotal = dateFilteredExpenses
+      .filter(t => t.type !== 'income')
       .reduce((sum, t) => sum + parseFloat(t.amount || 0), 0);
 
     const balance = incomeTotal - expenseTotal;
@@ -381,18 +384,33 @@ function showDashboard(user) {
     if (incomeEl) incomeEl.textContent = `₹ ${incomeTotal.toFixed(2)}`;
     if (expensesEl) expensesEl.textContent = `₹ ${expenseTotal.toFixed(2)}`;
 
-
-    // Update Charts (ONLY Expenses)
-    const expenseOnlyData = filteredExpenses.filter(t => t.type !== 'income');
+    // Update Charts (Based on Date Filter - ONLY Expenses)
+    const expenseOnlyData = dateFilteredExpenses.filter(t => t.type !== 'income');
     updateCharts(expenseOnlyData, allExpenses.filter(t => t.type !== 'income'));
+
+    // 2. Filter by Category (Secondary Filter for List)
+    let listData = dateFilteredExpenses;
+    if (selectedCategoryFilter) {
+      listData = dateFilteredExpenses.filter(exp => exp.category === selectedCategoryFilter);
+    }
+
+    // Update Recent Transactions Header (Simplified)
+    const transactionsHeader = document.querySelector('main h3'); // "Recent Transactions"
+    if (transactionsHeader) {
+      if (selectedCategoryFilter) {
+        transactionsHeader.textContent = `Recent Transactions - ${selectedCategoryFilter}`;
+      } else {
+        transactionsHeader.textContent = 'Recent Transactions';
+      }
+    }
 
     listContainer.innerHTML = '';
 
-    if (filteredExpenses.length === 0) {
-      listContainer.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">No transactions found for this period.</p>';
+    if (listData.length === 0) {
+      listContainer.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">No transactions found.</p>';
     }
 
-    // Category Totals for Expense Breakdown
+    // Category Totals for Expense Breakdown (Based on Date Filter)
     const categoryTotals = {};
     expenseOnlyData.forEach(expense => {
       if (categoryTotals[expense.category]) {
@@ -402,7 +420,7 @@ function showDashboard(user) {
       }
     });
 
-    filteredExpenses.forEach(expense => {
+    listData.forEach(expense => {
       // Ensure number
       expense.amount = parseFloat(expense.amount);
       const isIncome = expense.type === 'income';
@@ -516,7 +534,18 @@ function showDashboard(user) {
         else if (lowerCat.includes('home') || lowerCat.includes('rent')) { iconClass = 'bi-house-door'; colorClass = 'bg-info'; }
 
         const item = document.createElement('div');
-        item.className = 'category-list-item';
+        item.className = `category-list-item ${selectedCategoryFilter === category ? 'selected-category' : ''}`;
+
+        // Add click listener for filtering
+        item.addEventListener('click', () => {
+          if (selectedCategoryFilter === category) {
+            selectedCategoryFilter = null; // Toggle off
+          } else {
+            selectedCategoryFilter = category; // Set filter
+          }
+          renderExpenses(); // Re-render
+        });
+
         item.innerHTML = `
             <div class="d-flex align-items-center mb-1 justify-content-between">
                 <div class="d-flex align-items-center gap-2">
@@ -536,7 +565,27 @@ function showDashboard(user) {
 
       const card = document.createElement('div');
       card.className = 'breakdown-card w-100'; // Custom class for distinct styling
-      card.innerHTML = `<h3 class="mb-3">Expense Breakdown</h3>`;
+
+      // Breakdown Header with Optional Clear Button
+      const headerDiv = document.createElement('div');
+      headerDiv.className = 'd-flex justify-content-between align-items-center mb-3';
+      headerDiv.innerHTML = `<h3 class="m-0">Expense Breakdown</h3>`;
+
+      if (selectedCategoryFilter) {
+        const clearBtn = document.createElement('button');
+        clearBtn.className = 'btn-secondary btn-sm';
+        clearBtn.style.fontSize = '0.75rem';
+        clearBtn.style.padding = '0.2rem 0.6rem';
+        clearBtn.textContent = 'Clear Filter';
+        clearBtn.addEventListener('click', (e) => {
+          e.stopPropagation(); // Prevent bubbling if needed
+          selectedCategoryFilter = null;
+          renderExpenses();
+        });
+        headerDiv.appendChild(clearBtn);
+      }
+
+      card.appendChild(headerDiv);
       card.appendChild(categoryList);
 
       categoryContainer.innerHTML = ''; // Clear previous
@@ -575,7 +624,12 @@ function showDashboard(user) {
     }
   };
 
-  filterSelect.addEventListener('change', renderExpenses);
+  filterSelect.addEventListener('change', () => {
+    renderExpenses(); // Re-render should respect date filter AND clear category if needed? 
+    // Optionally clear category filter on date change to avoid confusion
+    // selectedCategoryFilter = null; 
+  });
+
 
   // Budget Logic
   let currentBudgetMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
