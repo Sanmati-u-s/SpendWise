@@ -49,7 +49,7 @@ https://personal-expenses-tracker-gamma.vercel.app/
 
    ```bash
    git clone https://github.com/Sanmati-u-s/SpendWise.git
-   cd Personal-Expenses-Tracker
+   cd SpendWise
    ```
 2. **Install Dependencies**:
 
