@@ -116,6 +116,23 @@ function showDashboard(user) {
     setTheme(newTheme);
   });
 
+  // Personalized greeting by time of day
+  const greetingEl = document.getElementById('header-greeting');
+  if (greetingEl) {
+    const hour = new Date().getHours();
+    const tod = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening';
+    const firstName = user.displayName?.split(' ')[0] || user.email?.split('@')[0] || 'there';
+    greetingEl.textContent = `Good ${tod}, ${firstName} 👋`;
+  }
+
+  // Live date pill
+  const datePillWrap = document.getElementById('header-date-pill');
+  if (datePillWrap) {
+    const now = new Date();
+    const formatted = now.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+    datePillWrap.innerHTML = `<span class="date-pill"><i class="bi bi-calendar3"></i> ${formatted}</span>`;
+  }
+
   // Setup Logout
   document.getElementById('logout-btn').addEventListener('click', async () => {
     try {
@@ -175,6 +192,40 @@ function showDashboard(user) {
     }
   });
 
+  // FAB Speed Dial Logic
+  const fabContainer = document.getElementById('fab-container');
+  const fabMainBtn = document.getElementById('fab-main-btn');
+  const fabAddIncome = document.getElementById('fab-add-income-btn');
+  const fabAddExpense = document.getElementById('fab-add-expense-btn');
+
+  if (fabMainBtn) {
+    fabMainBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      fabContainer.classList.toggle('fab-open');
+    });
+  }
+
+  if (fabAddIncome) {
+    fabAddIncome.addEventListener('click', () => {
+      openModal('income');
+      fabContainer.classList.remove('fab-open');
+    });
+  }
+
+  if (fabAddExpense) {
+    fabAddExpense.addEventListener('click', () => {
+      openModal('expense');
+      fabContainer.classList.remove('fab-open');
+    });
+  }
+
+  // Close FAB when clicking outside
+  document.addEventListener('click', (e) => {
+    if (fabContainer && !fabContainer.contains(e.target)) {
+      fabContainer.classList.remove('fab-open');
+    }
+  });
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const expense = {
@@ -208,6 +259,75 @@ function showDashboard(user) {
   const listContainer = document.getElementById('expenses-list');
   const totalAmountEl = document.getElementById('total-amount');
   const filterSelect = document.getElementById('date-filter');
+  const searchInput = document.getElementById('transaction-search');
+
+  let isSelectionMode = false;
+  let selectedIds = [];
+
+  const bulkSelectBtn = document.getElementById('bulk-select-btn');
+  if (bulkSelectBtn) {
+    bulkSelectBtn.addEventListener('click', () => {
+      isSelectionMode = !isSelectionMode;
+      selectedIds = [];
+      bulkSelectBtn.classList.toggle('active', isSelectionMode);
+      bulkSelectBtn.innerHTML = isSelectionMode ? '<i class="bi bi-x-lg me-1"></i> Cancel' : '<i class="bi bi-check2-square me-1"></i> Select';
+      renderExpenses();
+      updateBulkBar();
+    });
+  }
+
+  const updateBulkBar = () => {
+    let bar = document.getElementById('bulk-actions-bar');
+    if (selectedIds.length === 0) {
+      if (bar) bar.remove();
+      return;
+    }
+
+    if (!bar) {
+      bar = document.createElement('div');
+      bar.id = 'bulk-actions-bar';
+      bar.className = 'bulk-actions-bar';
+      document.body.appendChild(bar);
+    }
+
+    bar.innerHTML = `
+      <div class="bulk-bar-content">
+        <span class="selected-count">${selectedIds.length} items selected</span>
+        <div class="bulk-btns">
+          <button id="bulk-delete-btn" class="btn-bulk-delete"><i class="bi bi-trash me-1"></i> Delete</button>
+          <button id="bulk-cancel-btn" class="btn-bulk-cancel">Cancel</button>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('bulk-delete-btn').addEventListener('click', async () => {
+      if (confirm(`Are you sure you want to delete ${selectedIds.length} transactions?`)) {
+        for (const id of selectedIds) {
+          await deleteExpense(id);
+        }
+        isSelectionMode = false;
+        selectedIds = [];
+        bulkSelectBtn.innerHTML = '<i class="bi bi-check2-square me-1"></i> Select';
+        renderExpenses();
+        updateBulkBar();
+      }
+    });
+
+    document.getElementById('bulk-cancel-btn').addEventListener('click', () => {
+      isSelectionMode = false;
+      selectedIds = [];
+      bulkSelectBtn.innerHTML = '<i class="bi bi-check2-square me-1"></i> Select';
+      renderExpenses();
+      updateBulkBar();
+    });
+  };
+
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      // Re-render expenses but keep charts logic as is
+      renderExpenses();
+    });
+  }
 
   let allExpenses = [];
 
@@ -215,6 +335,31 @@ function showDashboard(user) {
   let pieChart = null;
   let barChart = null;
   let incomeExpenseChart = null;
+
+  // Chart Tab Switching Logic
+  const tabHeader = document.querySelector('.charts-tab-header');
+  if (tabHeader) {
+    const tabBtns = tabHeader.querySelectorAll('.chart-tab-btn');
+    const chartCards = document.querySelectorAll('.charts-container .chart-card');
+
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetTab = btn.getAttribute('data-tab');
+
+        // Update Buttons
+        tabBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // Update Cards
+        chartCards.forEach(card => {
+          card.classList.remove('active');
+          if (card.id === `tab-${targetTab}`) {
+            card.classList.add('active');
+          }
+        });
+      });
+    });
+  }
 
   const updateCharts = (currentExpenses, allExpenses) => {
     const pieCtx = document.getElementById('pie-chart');
@@ -261,12 +406,13 @@ function showDashboard(user) {
       data: pieData,
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: {
           legend: {
             position: 'bottom',
             labels: {
               usePointStyle: true,
-              padding: 20,
+              padding: 10,
               font: {
                 family: "'Outfit', sans-serif",
                 size: 13,
@@ -276,9 +422,9 @@ function showDashboard(user) {
             }
           }
         },
-        cutout: '70%', /* Slightly thicker */
+        cutout: '70%',
         layout: {
-          padding: 10
+          padding: 0
         },
         elements: {
           arc: {
@@ -463,8 +609,9 @@ function showDashboard(user) {
     }
   };
 
-  // State for filtering
+  // State for filtering & pagination
   let selectedCategoryFilter = null;
+  let visibleCount = 8;
 
   const renderExpenses = () => {
     const filterValue = filterSelect.value;
@@ -501,6 +648,9 @@ function showDashboard(user) {
     const expenseOnlyData = dateFilteredExpenses.filter(t => t.type !== 'income');
     updateCharts(expenseOnlyData, allExpenses);
 
+    // Update Insights (Based on Date Filter)
+    updateInsights(allExpenses, filterValue);
+
     // 2. Filter by Category (Secondary Filter for List)
     let listData = dateFilteredExpenses;
     if (selectedCategoryFilter) {
@@ -519,8 +669,46 @@ function showDashboard(user) {
 
     listContainer.innerHTML = '';
 
-    if (listData.length === 0) {
-      listContainer.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">No transactions found.</p>';
+    // Search Filtering
+    const searchInput = document.getElementById('transaction-search');
+
+    // Add listener for resetting visibleCount on typing (only once)
+    if (searchInput && !searchInput.dataset.paginationBound) {
+      searchInput.addEventListener('input', () => {
+        visibleCount = 8;
+        renderExpenses();
+      });
+      searchInput.dataset.paginationBound = "true";
+    }
+
+    const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+    if (searchTerm) {
+      listData = listData.filter(exp =>
+        exp.description.toLowerCase().includes(searchTerm) ||
+        exp.category.toLowerCase().includes(searchTerm)
+      );
+    }
+
+    // Determine slice for pagination
+    const totalTransactions = listData.length;
+    const paginatedData = listData.slice(0, visibleCount);
+
+    if (paginatedData.length === 0) {
+      if (searchTerm) {
+        listContainer.innerHTML = `
+          <div class="empty-state" style="padding: 2rem;">
+            <i class="bi bi-search" style="font-size: 2.5rem; color: var(--text-secondary); opacity: 0.5;"></i>
+            <p style="margin-top: 1rem; color: var(--text-secondary);">No transactions match "${searchTerm}"</p>
+          </div>
+        `;
+      } else {
+        listContainer.innerHTML = renderEmptyExpenses();
+        const emptyStateBtn = document.getElementById('empty-state-add-btn');
+        if (emptyStateBtn) {
+          emptyStateBtn.addEventListener('click', () => openModal('expense'));
+        }
+      }
     }
 
     // Category Totals for Expense Breakdown (Based on Date Filter)
@@ -533,36 +721,17 @@ function showDashboard(user) {
       }
     });
 
-    listData.forEach(expense => {
+    paginatedData.forEach(expense => {
       // Ensure number
       expense.amount = parseFloat(expense.amount);
       const isIncome = expense.type === 'income';
 
-      // Emoji Mapper (Keep for transaction list for now, or update to icons too? Let's keep emojis for the list as they are compact)
-      const getCategoryEmoji = (cat) => {
-        const lowerCat = cat.toLowerCase();
-        // Income
-        if (lowerCat.includes('salary')) return '💰';
-        if (lowerCat.includes('freelance')) return '💻';
-        if (lowerCat.includes('invest')) return '📈';
-        if (lowerCat.includes('gift')) return '🎁';
-
-        // Expenses
-        if (lowerCat.includes('food')) return '🍔';
-        if (lowerCat.includes('transport')) return '🚗';
-        if (lowerCat.includes('utility') || lowerCat.includes('bill')) return '💡';
-        if (lowerCat.includes('game') || lowerCat.includes('entertainment')) return '🎮';
-        if (lowerCat.includes('health')) return '🏥';
-        if (lowerCat.includes('shop')) return '🛍️';
-        return isIncome ? '💵' : '💸';
-      };
-
-      const emoji = getCategoryEmoji(expense.category);
       const amountClass = isIncome ? 'text-success' : 'text-danger';
       const sign = isIncome ? '+' : '-';
 
       const el = document.createElement('div');
       el.className = 'expense-item';
+      el.dataset.id = expense.id;
 
       // Icon & Color Logic (Reused from breakdown for consistency)
       let colorClass = 'bg-secondary';
@@ -578,61 +747,165 @@ function showDashboard(user) {
       else if (lowerCat.includes('home') || lowerCat.includes('rent')) { iconClass = 'bi-house-door'; colorClass = 'bg-info'; }
       else if (isIncome) { iconClass = 'bi-cash-coin'; colorClass = 'bg-success'; }
 
-      el.innerHTML = `
-        <div class="expense-icon-box ${colorClass} bg-opacity-10 text-body">
-            <i class="bi ${iconClass}"></i>
-        </div>
-        
-        <div class="expense-details">
-            <div class="expense-title">${expense.description}</div>
-            <div class="expense-date">${new Date(expense.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</div>
-        </div>
+      const renderItemNormal = () => {
+        const isSelected = selectedIds.includes(expense.id);
+        el.className = `expense-item ${isSelectionMode ? 'selection-mode' : ''} ${isSelected ? 'selected' : ''}`;
 
-        <div class="expense-category-badge">
-            ${expense.category}
-        </div>
+        el.innerHTML = `
+          ${isSelectionMode ? `
+            <div class="selection-check">
+              <input type="checkbox" ${isSelected ? 'checked' : ''}>
+            </div>
+          ` : ''}
+          <div class="expense-icon-box ${colorClass} bg-opacity-10 text-body">
+              <i class="bi ${iconClass}"></i>
+          </div>
+          
+          <div class="expense-details">
+              <div class="expense-title clickable-edit">${expense.description}</div>
+              <div class="expense-date">${new Date(expense.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</div>
+          </div>
 
-        <div class="expense-amount ${amountClass}">${sign} ₹ ${expense.amount.toFixed(2)}</div>
-        
-        <div class="expense-actions">
-            <button class="btn-icon btn-edit" title="Edit"><i class="bi bi-pencil-fill" style="font-size: 0.8rem;"></i></button>
-            <button class="btn-icon btn-delete" title="Delete"><i class="bi bi-trash-fill" style="font-size: 0.8rem;"></i></button>
-        </div>
-      `;
+          <div class="expense-category-badge clickable-edit">
+              ${expense.category}
+          </div>
 
-      // Attach Listeners
-      el.querySelector('.btn-delete').addEventListener('click', async () => {
-        if (confirm('Are you sure you want to delete this transaction?')) {
-          try {
-            await deleteExpense(expense.id);
-          } catch (error) {
-            console.error("Error deleting expense: ", error);
-            alert("Failed to delete expense");
+          <div class="expense-amount ${amountClass} clickable-edit">${sign} ₹ ${expense.amount.toFixed(2)}</div>
+          
+          <div class="expense-actions">
+              <button class="btn-icon btn-edit" title="Edit"><i class="bi bi-pencil-fill" style="font-size: 0.8rem;"></i></button>
+              <button class="btn-icon btn-delete" title="Delete"><i class="bi bi-trash-fill" style="font-size: 0.8rem;"></i></button>
+          </div>
+        `;
+
+        if (isSelectionMode) {
+          el.addEventListener('click', (e) => {
+            // If click was on checkbox, handled by change listener
+            // Otherwise, toggle checkbox manually
+            if (e.target.tagName !== 'INPUT') {
+              const checkbox = el.querySelector('input[type="checkbox"]');
+              checkbox.checked = !checkbox.checked;
+              toggleSelection(expense.id, checkbox.checked);
+            }
+          });
+          el.querySelector('input[type="checkbox"]').addEventListener('change', (e) => {
+            toggleSelection(expense.id, e.target.checked);
+          });
+        }
+
+        const toggleSelection = (id, checked) => {
+          if (checked) {
+            if (!selectedIds.includes(id)) selectedIds.push(id);
+          } else {
+            selectedIds = selectedIds.filter(sid => sid !== id);
           }
-        }
-      });
+          el.classList.toggle('selected', checked);
+          updateBulkBar();
+        };
 
-      el.querySelector('.btn-edit').addEventListener('click', () => {
-        currentEditingId = expense.id;
-        form.description.value = expense.description;
-        form.amount.value = expense.amount;
-        form.category.value = expense.category;
-        form.date.value = expense.date;
+        // Modal Edit
+        el.querySelector('.btn-edit').addEventListener('click', () => {
+          currentEditingId = expense.id;
+          form.description.value = expense.description;
+          form.amount.value = expense.amount;
+          form.category.value = expense.category;
+          form.date.value = expense.date;
+          form.type.value = expense.type || 'expense';
+          document.querySelector('#add-expense-modal h3').textContent = 'Edit Transaction';
+          document.querySelector('#add-expense-form button[type="submit"]').textContent = 'Update Transaction';
+          modal.classList.add('active');
+        });
 
-        // Set Type
-        if (expense.type) {
-          form.type.value = expense.type;
-        } else {
-          form.type.value = 'expense';
-        }
+        // Delete
+        el.querySelector('.btn-delete').addEventListener('click', async () => {
+          if (confirm('Are you sure you want to delete this transaction?')) {
+            await deleteExpense(expense.id);
+          }
+        });
 
-        document.querySelector('#add-expense-modal h3').textContent = 'Edit Transaction';
-        document.querySelector('#add-expense-form button[type="submit"]').textContent = 'Update Transaction';
-        modal.classList.add('active');
-      });
+        // Inline Edit Trigger
+        el.querySelectorAll('.clickable-edit').forEach(trigger => {
+          trigger.addEventListener('click', renderItemEdit);
+        });
+      };
 
+      const renderItemEdit = () => {
+        el.classList.add('editing');
+        el.innerHTML = `
+          <div class="expense-edit-form">
+            <input type="text" class="edit-desc" value="${expense.description}" placeholder="Description">
+            <select class="edit-cat custom-select">
+              <option value="Food">Food</option>
+              <option value="Transport">Transport</option>
+              <option value="Utilities">Utilities</option>
+              <option value="Shopping">Shopping</option>
+              <option value="Health">Health</option>
+              <option value="Entertainment">Entertainment</option>
+              <option value="Home">Home</option>
+              <option value="Salary">Salary</option>
+              <option value="Freelance">Freelance</option>
+              <option value="Investments">Investments</option>
+              <option value="Others">Others</option>
+            </select>
+            <div class="edit-amt-wrap">
+              <span>₹</span>
+              <input type="number" class="edit-amt" value="${expense.amount}" step="0.01">
+            </div>
+            <div class="edit-actions">
+              <button class="save-inline-btn" title="Save"><i class="bi bi-check-lg"></i></button>
+              <button class="cancel-inline-btn" title="Cancel"><i class="bi bi-x-lg"></i></button>
+            </div>
+          </div>
+        `;
+
+        const descInput = el.querySelector('.edit-desc');
+        const catInput = el.querySelector('.edit-cat');
+        const amtInput = el.querySelector('.edit-amt');
+
+        catInput.value = expense.category;
+
+        el.querySelector('.cancel-inline-btn').addEventListener('click', () => {
+          el.classList.remove('editing');
+          renderItemNormal();
+        });
+
+        el.querySelector('.save-inline-btn').addEventListener('click', async () => {
+          const updated = {
+            ...expense,
+            description: descInput.value,
+            category: catInput.value,
+            amount: parseFloat(amtInput.value)
+          };
+          delete updated.id; // Don't save ID in doc
+          await updateExpense(expense.id, updated);
+          // Re-render handled by subscription
+        });
+
+        descInput.focus();
+      };
+
+      renderItemNormal();
       listContainer.appendChild(el);
     });
+
+    // Add Show More button if there are more transactions
+    if (visibleCount < totalTransactions) {
+      const showMoreContainer = document.createElement('div');
+      showMoreContainer.className = 'show-more-container';
+      showMoreContainer.innerHTML = `
+        <button class="btn-show-more">
+          <span>Show More</span>
+          <i class="bi bi-chevron-down"></i>
+        </button>
+      `;
+
+      showMoreContainer.querySelector('button').addEventListener('click', () => {
+        visibleCount += 8;
+        renderExpenses();
+      });
+
+      listContainer.appendChild(showMoreContainer);
+    }
 
     // Handle Filter Status / Back Button in Header
     const filterStatusContainer = document.getElementById('filter-status');
@@ -694,6 +967,7 @@ function showDashboard(user) {
           } else {
             selectedCategoryFilter = category; // Set filter
           }
+          visibleCount = 8; // Reset pagination on category toggle
           renderExpenses(); // Re-render
         });
 
@@ -763,6 +1037,7 @@ function showDashboard(user) {
   };
 
   filterSelect.addEventListener('change', () => {
+    visibleCount = 8; // Reset pagination on month change
     renderExpenses(); // Re-render should respect date filter AND clear category if needed? 
     // Optionally clear category filter on date change to avoid confusion
     // selectedCategoryFilter = null; 
@@ -770,47 +1045,186 @@ function showDashboard(user) {
 
 
   // Budget Logic
-  let currentBudgetMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
-  let allBudgets = {};
-
-  const budgetMonthSelect = document.getElementById('budget-month-select');
-
-  const updateBudgetMonthOptions = () => {
-    if (!budgetMonthSelect) return;
-
-    const distinctMonths = new Set();
-    distinctMonths.add(new Date().toISOString().slice(0, 7)); // Ensure current month is always there
-
-    // Add months from expenses
-    allExpenses.forEach(e => distinctMonths.add(e.date.slice(0, 7)));
-
-    // Add months from budgets
-    Object.keys(allBudgets).forEach(m => distinctMonths.add(m));
-
-    const sortedMonths = Array.from(distinctMonths).sort().reverse();
-
-    budgetMonthSelect.innerHTML = '';
-    sortedMonths.forEach(month => {
-      const [y, m] = month.split('-');
-      const label = new Date(y, m - 1).toLocaleDateString('default', { month: 'long', year: 'numeric' });
-      const opt = document.createElement('option');
-      opt.value = month;
-      opt.textContent = label;
-      budgetMonthSelect.appendChild(opt);
-    });
-
-    budgetMonthSelect.value = currentBudgetMonth;
+  const getYearMonth = (date) => {
+    const y = date.getFullYear();
+    const m = (date.getMonth() + 1).toString().padStart(2, '0');
+    return `${y}-${m}`;
   };
 
-  if (budgetMonthSelect) {
-    budgetMonthSelect.addEventListener('change', (e) => {
-      currentBudgetMonth = e.target.value;
-      updateBudgetUI();
-    });
+  let currentBudgetMonth = getYearMonth(new Date());
+  const INITIAL_MONTH = currentBudgetMonth;
+  let allBudgets = {};
+
+  const budgetMonthLabel = document.getElementById('budget-month-label');
+  const budgetPrevBtn = document.getElementById('budget-prev-month');
+  const budgetNextBtn = document.getElementById('budget-next-month');
+
+  const updateBudgetMonthLabel = () => {
+    if (!budgetMonthLabel) return;
+    const [y, m] = currentBudgetMonth.split('-');
+    const label = new Date(y, m - 1).toLocaleDateString('default', { month: 'long', year: 'numeric' });
+    budgetMonthLabel.textContent = label;
+
+    // Disable "next" if we are at the current month
+    if (budgetNextBtn) {
+      budgetNextBtn.disabled = currentBudgetMonth >= INITIAL_MONTH;
+    }
+  };
+
+  const stepMonth = (delta) => {
+    const [y, m] = currentBudgetMonth.split('-').map(Number);
+    const date = new Date(y, m - 1 + delta);
+    currentBudgetMonth = getYearMonth(date);
+    updateBudgetMonthLabel();
+    updateBudgetUI();
+    renderExpenses(); // Also re-render list to reflect month change if filter is active
+  };
+
+  if (budgetPrevBtn) {
+    budgetPrevBtn.addEventListener('click', () => stepMonth(-1));
   }
 
+  if (budgetNextBtn) {
+    budgetNextBtn.addEventListener('click', () => stepMonth(1));
+  }
+
+  // Initial label state
+  updateBudgetMonthLabel();
+
+  // (Keeping this for compatibility with existing database subscriptions)
+  const updateBudgetMonthOptions = () => {
+    updateBudgetMonthLabel();
+  };
+
+  const updateInsights = (allExpenses, filterValue = 'all') => {
+    const container = document.getElementById('insights-track');
+    if (!container) return;
+
+    container.innerHTML = '';
+    const insights = [];
+
+    // Determine the active month for insights
+    let targetMonthKey;
+    if (filterValue && filterValue !== 'all') {
+      targetMonthKey = filterValue;
+    } else {
+      // Default to latest month in data or current month
+      if (allExpenses.length > 0) {
+        const latestDate = new Date(Math.max(...allExpenses.map(e => new Date(e.date))));
+        targetMonthKey = `${latestDate.getFullYear()}-${String(latestDate.getMonth() + 1).padStart(2, '0')}`;
+      } else {
+        const now = new Date();
+        targetMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      }
+    }
+
+    const [year, month] = targetMonthKey.split('-').map(Number);
+    const prevMonthDate = new Date(year, month - 2, 1);
+    const prevMonthKey = `${prevMonthDate.getFullYear()}-${String(prevMonthDate.getMonth() + 1).padStart(2, '0')}`;
+
+    let currentSpend = 0;
+    let prevSpend = 0;
+    let currentIncome = 0;
+
+    allExpenses.forEach(exp => {
+      const d = new Date(exp.date);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+
+      if (key === targetMonthKey) {
+        if (exp.type === 'income') currentIncome += exp.amount;
+        else currentSpend += exp.amount;
+      } else if (key === prevMonthKey) {
+        if (exp.type !== 'income') prevSpend += exp.amount;
+      }
+    });
+
+    // 1. Saving Trend (Month-over-Month)
+    if (prevSpend > 0) {
+      if (currentSpend < prevSpend) {
+        const saved = prevSpend - currentSpend;
+        insights.push({
+          icon: 'bi-stars',
+          title: 'Saving Trend',
+          text: `You've spent ₹${saved.toFixed(0)} less than in ${prevMonthDate.toLocaleDateString('default', { month: 'short' })}! 👏`,
+          color: 'success'
+        });
+      } else if (currentSpend > prevSpend * 1.1) {
+        insights.push({
+          icon: 'bi-exclamation-circle',
+          title: 'Spending Spike',
+          text: `Spending is higher than ${prevMonthDate.toLocaleDateString('default', { month: 'short' })}. Keep an eye on your bills!`,
+          color: 'warning'
+        });
+      }
+    }
+
+    // 2. Highest Category Insight (Specific to Target Month)
+    const targetMonthExpenses = allExpenses.filter(exp => {
+      const d = new Date(exp.date);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      return exp.type !== 'income' && key === targetMonthKey;
+    });
+
+    if (targetMonthExpenses.length > 0) {
+      const catTotals = {};
+      targetMonthExpenses.forEach(e => {
+        catTotals[e.category] = (catTotals[e.category] || 0) + e.amount;
+      });
+      const topCat = Object.entries(catTotals).sort((a, b) => b[1] - a[1])[0];
+      if (topCat) {
+        insights.push({
+          icon: 'bi-info-circle',
+          title: 'Category Focus',
+          text: `In ${new Date(year, month - 1).toLocaleDateString('default', { month: 'short' })}, ${topCat[0]} was your top expense (₹${topCat[1].toFixed(0)}).`,
+          color: 'info'
+        });
+      }
+    }
+
+    // 3. Dynamic Power Tip
+    const budgetLimit = allBudgets[targetMonthKey] || 0;
+    if (budgetLimit > 0 && currentSpend > budgetLimit) {
+      insights.push({
+        icon: 'bi-lightning-charge',
+        title: 'Power Tip',
+        text: `You're ₹${(currentSpend - budgetLimit).toFixed(0)} over budget. Let's try to curb non-essential spending.`,
+        color: 'warning'
+      });
+    } else if (currentIncome > currentSpend && currentSpend > 0) {
+      const savings = currentIncome - currentSpend;
+      insights.push({
+        icon: 'bi-lightning-charge',
+        title: 'Power Tip',
+        text: `You saved ₹${savings.toFixed(0)} this month! consider moving this to your emergency fund. 💰`,
+        color: 'success'
+      });
+    } else {
+      insights.push({
+        icon: 'bi-lightning-charge',
+        title: 'Power Tip',
+        text: "Categorizing every 'Other' expense helps identify hidden spending leaks.",
+        color: 'primary'
+      });
+    }
+
+    // Render Cards
+    insights.forEach(insight => {
+      const card = document.createElement('div');
+      card.className = `insight-card insight-card--${insight.color}`;
+      card.innerHTML = `
+        <i class="bi ${insight.icon} insight-icon"></i>
+        <div class="insight-content">
+          <div class="insight-title">${insight.title}</div>
+          <div class="insight-text">${insight.text}</div>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+  };
+
   const updateBudgetUI = () => {
-    const budgetCard = document.querySelector('.budget-overview');
+    const budgetCard = document.querySelector('.budget-card');
+
     if (!budgetCard) return;
 
     const limit = allBudgets[currentBudgetMonth] || 0;
@@ -820,6 +1234,11 @@ function showDashboard(user) {
       document.getElementById('budget-percentage').textContent = '';
       document.getElementById('budget-progress-bar').style.width = '0%';
       document.getElementById('budget-warning').style.display = 'none';
+      const msgEl = document.getElementById('budget-message');
+      if (msgEl) {
+        msgEl.textContent = "💡 Set a budget for this month to start tracking your limits!";
+        msgEl.className = 'budget-message budget-message--calm';
+      }
       return;
     }
 
@@ -839,30 +1258,58 @@ function showDashboard(user) {
 
     // Update Text
     const remaining = Math.max(limit - currentMonthExpenses, 0);
-    document.getElementById('budget-status-text').innerHTML = `
-        <span style="display: block; margin-bottom: 2px;">Spent: ₹ ${currentMonthExpenses.toFixed(2)} / ₹ ${limit.toFixed(2)}</span>
-        <span style="font-size: 0.85rem; color: ${remaining < (limit * 0.2) ? 'var(--danger-color)' : 'var(--success-color)'};">
-            Remaining: ₹ ${remaining.toFixed(2)}
-        </span>
-    `;
-    document.getElementById('budget-percentage').textContent = `${Math.round((currentMonthExpenses / limit) * 100)}%`;
+    document.getElementById('budget-status-text').textContent = `Spent: ₹ ${currentMonthExpenses.toFixed(2)} / ₹ ${limit.toFixed(2)}`;
+    const pctEl = document.getElementById('budget-percentage');
+    pctEl.textContent = `${Math.round((currentMonthExpenses / limit) * 100)}%`;
 
-    // Update Bar Color & Width
+    // Progress bar width + colour
     const progressBar = document.getElementById('budget-progress-bar');
     progressBar.style.width = `${percentage}%`;
+    if (percentage > 90) {
+      progressBar.style.background = 'linear-gradient(90deg, #f87171, #ef4444)';
+    } else if (percentage > 50) {
+      progressBar.style.background = 'linear-gradient(90deg, #fbbf24, #f59e0b)';
+    } else {
+      progressBar.style.background = 'linear-gradient(90deg, #22c55e, #06b6d4)';
+    }
 
-    let color = 'var(--success-color)';
-    if (percentage > 50) color = '#fbbf24'; // Warning (Yellow/Orange)
-    if (percentage > 90) color = 'var(--danger-color)'; // Danger (Red)
-
-    progressBar.style.backgroundColor = color;
-
-    // Warning Text
+    // Warning banner & percentage badge
     const warningEl = document.getElementById('budget-warning');
+    const pctBadge = document.getElementById('budget-percentage');
     if (isOverBudget) {
-      warningEl.style.display = 'block';
+      warningEl.style.display = 'flex';
+      pctBadge.classList.add('over-budget');
     } else {
       warningEl.style.display = 'none';
+      pctBadge.classList.remove('over-budget');
+    }
+
+    // Contextual motivational message
+    const msgEl = document.getElementById('budget-message');
+    if (msgEl) {
+      const rawPct = (currentMonthExpenses / limit) * 100;
+      let msg = '', cls = '';
+      if (rawPct === 0) {
+        msg = "✨ Month's just getting started — you're at ₹0 spent!";
+        cls = 'budget-message--calm';
+      } else if (rawPct <= 30) {
+        msg = "🌟 Great going! You're well within your budget.";
+        cls = 'budget-message--good';
+      } else if (rawPct <= 60) {
+        msg = "👍 On track! Keep mindful of your spending.";
+        cls = 'budget-message--good';
+      } else if (rawPct <= 80) {
+        msg = "🙂 You've used over half your budget — slow down a little.";
+        cls = 'budget-message--warn';
+      } else if (rawPct <= 100) {
+        msg = "⚠️ Almost there! Only ₹" + remaining.toFixed(0) + " left for this month.";
+        cls = 'budget-message--warn';
+      } else {
+        msg = "😬 You've gone over budget by ₹" + (currentMonthExpenses - limit).toFixed(0) + ". Time to pause spending!";
+        cls = 'budget-message--danger';
+      }
+      msgEl.textContent = msg;
+      msgEl.className = 'budget-message ' + cls;
     }
   };
 
@@ -920,12 +1367,14 @@ function showDashboard(user) {
     updateFilterOptions();
     updateBudgetMonthOptions(); // Update month dropdown
     renderExpenses();
-    updateBudgetUI(); // Recalculate on expense change
+    updateBudgetUI();
+    // updateInsights is now called inside renderExpenses
   });
 
   budgetCleanup = subscribeToBudget(user.uid, (budgets) => {
     allBudgets = budgets;
     updateBudgetMonthOptions(); // Ensure logic handles new budget months
     updateBudgetUI(); // Recalculate on budget change
+    updateInsights(allExpenses, filterSelect.value);
   });
 }
