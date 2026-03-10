@@ -4,7 +4,9 @@ import {
     signInWithEmailAndPassword,
     signOut,
     onAuthStateChanged,
-    updateProfile
+    updateProfile,
+    setPersistence,
+    browserSessionPersistence
 } from "firebase/auth";
 
 export const registerUser = async (username, email, password) => {
@@ -23,6 +25,11 @@ export const logoutUser = () => {
     return signOut(auth);
 };
 
-export const initAuth = (onUserChanged) => {
+export const initAuth = async (onUserChanged) => {
+    try {
+        await setPersistence(auth, browserSessionPersistence);
+    } catch (error) {
+        console.error("Error setting persistence:", error);
+    }
     onAuthStateChanged(auth, onUserChanged);
 };

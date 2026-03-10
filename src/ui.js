@@ -11,8 +11,10 @@ export const renderLogin = () => {
       <div class="auth-container">
         <div class="brand-header">
             <p class="welcome-text">Welcome Back</p>
-            <img src="/assets/logo2.svg" alt="SpendWise Logo" class="brand-logo" />
-            <h1 class="brand-name">SpendWise</h1>
+            <div class="brand-main">
+                <img src="/assets/logo2.svg" alt="SpendWise Logo" class="brand-logo" />
+                <h1 class="brand-name">SpendWise</h1>
+            </div>
         </div>
         <form id="login-form">
           <div class="input-group">
@@ -44,8 +46,10 @@ export const renderSignup = () => {
       <div class="auth-container">
         <div class="brand-header">
              <p class="welcome-text">Welcome To</p>
-             <img src="/assets/logo2.svg" alt="SpendWise Logo" class="brand-logo" />
-             <h1 class="brand-name">SpendWise</h1>
+             <div class="brand-main">
+                 <img src="/assets/logo2.svg" alt="SpendWise Logo" class="brand-logo" />
+                 <h1 class="brand-name">SpendWise</h1>
+             </div>
         </div>
         <form id="signup-form">
           <div class="input-group">
