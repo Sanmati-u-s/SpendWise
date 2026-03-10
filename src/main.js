@@ -31,14 +31,28 @@ const setTheme = (theme) => {
 setTheme(getPreferredTheme());
 
 // Initialization
-initAuth((user) => {
-  currentUser = user;
-  if (user) {
-    showDashboard(user);
-  } else {
-    showLogin();
+const init = async () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const mode = urlParams.get('mode');
+
+  if (mode === 'login') {
+    await logoutUser();
+    // Clean up URL to avoid repeated logouts on refresh
+    window.history.replaceState({}, document.title, window.location.pathname);
   }
-});
+
+  initAuth((user) => {
+    currentUser = user;
+    if (user) {
+      showDashboard(user);
+    } else {
+      showLogin();
+    }
+  });
+};
+
+init();
+
 
 // Navigation Functions
 function showLogin() {

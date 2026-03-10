@@ -112,8 +112,14 @@ h3 {
   width: 50px;
   /* Reduced from 80px */
   height: 50px;
-  margin: 0.5rem 0;
+  margin: 0;
   animation: floatLogo 3s ease-in-out infinite;
+}
+
+.brand-main {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
 @keyframes floatLogo {
@@ -164,7 +170,11 @@ header {
   border: var(--glass-border);
   box-shadow: var(--glass-shadow);
   gap: 1rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
 }
+
+
 
 .header-greeting {
   font-size: 0.85rem;
@@ -174,10 +184,11 @@ header {
 }
 
 .header-center-pill {
-  flex: 1;
   display: flex;
   justify-content: center;
+  align-items: center;
 }
+
 
 .date-pill {
   display: inline-flex;
@@ -202,7 +213,9 @@ header h2 {
   display: flex;
   gap: 1rem;
   align-items: center;
+  justify-content: flex-end;
 }
+
 
 
 
@@ -1599,13 +1612,13 @@ input[type="date"] {
 
 /* Main FAB button */
 .fab-main {
-  width: 56px;
-  height: 56px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   border: none;
   background: linear-gradient(135deg, #6366f1, #06b6d4);
   color: white;
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1614,6 +1627,7 @@ input[type="date"] {
   transition: transform 0.25s ease, box-shadow 0.25s ease;
   position: relative;
 }
+
 
 /* Pulse ring */
 .fab-main::before {
@@ -1701,12 +1715,12 @@ input[type="date"] {
 
 /* Child buttons */
 .fab-child-btn {
-  width: 42px;
-  height: 42px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   border: none;
   color: white;
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1714,6 +1728,7 @@ input[type="date"] {
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
   transition: transform 0.2s ease, filter 0.2s ease;
 }
+
 
 .fab-child-btn:hover {
   transform: scale(1.1);
