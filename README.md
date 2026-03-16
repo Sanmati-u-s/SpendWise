@@ -48,7 +48,9 @@ SpendWise is a modern web app that helps you manage your money with confidence. 
 
 ---
 
-## 🛠️ Tech Stack
+- **Frontend:** HTML, CSS, JavaScript (Vite)
+- **Charts:** Chart.js
+- **Backend Services:** Firebase Authentication + Cloud Firestore
 
 - **Frontend:** HTML, CSS, JavaScript (Vite)
 - **Charts:** Chart.js
