@@ -182,11 +182,8 @@ export const renderDashboard = (user) => {
               <div id="budget-progress-bar" class="budget-progress-fill"></div>
             </div>
 
-            <p id="budget-warning" class="budget-warning-banner">
-              <i class="bi bi-exclamation-triangle-fill"></i> You've exceeded your monthly budget!
-            </p>
+            <div id="budget-insights-area" class="budget-insights-list" style="margin-top: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem;"></div>
 
-            <p id="budget-message" class="budget-message"></p>
           </div>
         </div>
 

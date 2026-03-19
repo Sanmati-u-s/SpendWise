@@ -45,7 +45,10 @@ SpendWise is a modern web app that helps you manage your money with confidence. 
 
 - Set monthly budget targets
 - Visual budget utilization progress
-- Dynamic warnings when nearing or exceeding budget
+- **Advanced Budget Insights**:
+  - 🔮 **Rate Projection**: Predicts whether you will exceed or stay within budget by month-end based on daily averages.
+  - 📊 **Habit Insight**: Identifies whether you spend significantly more on weekends vs weekdays.
+  - 💡 **Smart Suggestion**: Recommends optimal savings targets based on top categories.
 
 ### 🎨 User Experience
 

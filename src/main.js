@@ -1409,6 +1409,8 @@ function showDashboard(user) {
         msgEl.textContent = "💡 Set a budget for this month to start tracking your limits!";
         msgEl.className = 'budget-message budget-message--calm';
       }
+      const projectionEl = document.getElementById('budget-projection');
+      if (projectionEl) projectionEl.style.display = 'none';
       return;
     }
 
@@ -1444,42 +1446,107 @@ function showDashboard(user) {
     }
 
     // Warning banner & percentage badge
-    const warningEl = document.getElementById('budget-warning');
     const pctBadge = document.getElementById('budget-percentage');
     if (isOverBudget) {
-      warningEl.style.display = 'flex';
-      pctBadge.classList.add('over-budget');
+      if (pctBadge) pctBadge.classList.add('over-budget');
     } else {
-      warningEl.style.display = 'none';
-      pctBadge.classList.remove('over-budget');
+      if (pctBadge) pctBadge.classList.remove('over-budget');
     }
 
-    // Contextual motivational message
-    const msgEl = document.getElementById('budget-message');
-    if (msgEl) {
-      const rawPct = (currentMonthExpenses / limit) * 100;
-      let msg = '', cls = '';
-      if (rawPct === 0) {
-        msg = "✨ Month's just getting started — you're at ₹0 spent!";
-        cls = 'budget-message--calm';
-      } else if (rawPct <= 30) {
-        msg = "🌟 Great going! You're well within your budget.";
-        cls = 'budget-message--good';
-      } else if (rawPct <= 60) {
-        msg = "👍 On track! Keep mindful of your spending.";
-        cls = 'budget-message--good';
-      } else if (rawPct <= 80) {
-        msg = "🙂 You've used over half your budget — slow down a little.";
-        cls = 'budget-message--warn';
-      } else if (rawPct <= 100) {
-        msg = "😬 Careful! Only ₹" + remaining.toFixed(0) + " left of your budget.";
-        cls = 'budget-message--warn';
-      } else {
-        msg = "🛑 You've gone over budget by ₹" + (currentMonthExpenses - limit).toFixed(0) + ". Time to pause spending!";
-        cls = 'budget-message--danger';
+    // Advanced Budget Insights
+    const insightsArea = document.getElementById('budget-insights-area');
+    if (insightsArea) {
+      insightsArea.innerHTML = ''; // Clear previous
+
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth();
+      const currentYearMonth = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
+
+      // 1. Rate Projection Alert
+      if (currentBudgetMonth === currentYearMonth && limit > 0) {
+        const daysPassed = now.getDate();
+        const totalDays = new Date(currentYear, currentMonth + 1, 0).getDate();
+        const avgDailySpend = daysPassed > 0 ? currentMonthExpenses / daysPassed : 0;
+        const projectedSpend = avgDailySpend * totalDays;
+        const exceedAmount = projectedSpend - limit;
+
+        const item = document.createElement('div');
+        item.style.fontSize = '0.82rem';
+        item.style.fontWeight = '500';
+
+        if (exceedAmount > 0) {
+          item.style.color = '#dc2626'; 
+          item.innerHTML = `⚠️ At this rate, you'll exceed your budget by <span style="font-weight: 700;">₹ ${exceedAmount.toFixed(0)}</span> this month`;
+        } else {
+          const withinAmount = limit - projectedSpend;
+          item.style.color = '#16a34a'; 
+          item.innerHTML = `✅ At this rate, you'll be within your budget by <span style="font-weight: 700;">₹ ${withinAmount.toFixed(0)}</span> this month`;
+        }
+        insightsArea.appendChild(item);
       }
-      msgEl.textContent = msg;
-      msgEl.className = 'budget-message ' + cls;
+
+      // 2. Habit Insight: Weekend vs Weekday
+      if (currentBudgetMonth === currentYearMonth) {
+        let weekendSpend = 0;
+        let weekdaySpend = 0;
+        let weekendDays = 0;
+        let weekdayDays = 0;
+
+        const daysPassed = now.getDate();
+        for (let i = 1; i <= daysPassed; i++) {
+          const d = new Date(currentYear, currentMonth, i);
+          const day = d.getDay(); 
+          if (day === 0 || day === 6) weekendDays++;
+          else weekdayDays++;
+        }
+
+        allExpenses
+          .filter(t => t.type !== 'income' && t.date.startsWith(currentBudgetMonth))
+          .forEach(t => {
+             const d = new Date(t.date);
+             const day = d.getDay();
+             if (day === 0 || day === 6) weekendSpend += t.amount;
+             else weekdaySpend += t.amount;
+          });
+
+        const avgWeekend = weekendDays > 0 ? weekendSpend / weekendDays : 0;
+        const avgWeekday = weekdayDays > 0 ? weekdaySpend / weekdayDays : 0;
+
+        if (avgWeekend > avgWeekday && avgWeekday > 0) {
+          const pctIncrease = ((avgWeekend - avgWeekday) / avgWeekday) * 100;
+          const item = document.createElement('div');
+          item.style.fontSize = '0.82rem';
+          item.style.fontWeight = '500';
+          item.style.color = 'var(--text-color)';
+          item.innerHTML = `<span style="color: #6366f1; font-weight:600;">Habit Insight:</span> You spend <span style="font-weight: 700;">${pctIncrease.toFixed(0)}% more</span> on weekends`;
+          insightsArea.appendChild(item);
+        }
+      }
+
+      // 3. Smart Suggestion
+      const currentMonthExpensesData = allExpenses.filter(t => t.type !== 'income' && t.date.startsWith(currentBudgetMonth));
+      if (currentMonthExpensesData.length > 0) {
+        const catTotals = {};
+        currentMonthExpensesData.forEach(t => {
+          catTotals[t.category] = (catTotals[t.category] || 0) + t.amount;
+        });
+        const topCat = Object.entries(catTotals).sort((a, b) => b[1] - a[1])[0];
+        if (topCat && topCat[1] > 0) {
+          const category = topCat[0];
+          const item = document.createElement('div');
+          item.style.fontSize = '0.82rem';
+          item.style.fontWeight = '500';
+          item.style.color = 'var(--text-color)';
+          
+          if (category.toLowerCase().includes('food')) {
+              item.innerHTML = `<span style="color: #16a34a; font-weight:600;">Smart Suggestion:</span> Reducing food expenses by ₹50/day saves <span style="font-weight:700;">₹1500/month</span>`;
+          } else {
+              item.innerHTML = `<span style="color: #16a34a; font-weight:600;">Smart Suggestion:</span> Cutting <span style="font-weight: 700;">${category}</span> budget by 10% saves you <span style="font-weight: 700;">₹ ${(topCat[1] * 0.1).toFixed(0)}</span>`;
+          }
+          insightsArea.appendChild(item);
+        }
+      }
     }
   };
 
