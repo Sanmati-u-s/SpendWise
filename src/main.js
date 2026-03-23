@@ -53,8 +53,7 @@ const loginMessages = [
   "Polishing your dashboard...",
   "Counting the savings...",
   "Opening your piggy bank...",
-  "Gathering your money trees...",
-  "Making financial magic happen..."
+  "Gathering your money trees..."
 ];
 
 const signupMessages = [
