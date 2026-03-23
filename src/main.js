@@ -31,6 +31,15 @@ const setTheme = (theme) => {
 // Initialize Theme
 setTheme(getPreferredTheme());
 
+const hideLoader = () => {
+  const loader = document.getElementById('loader');
+  if (loader) {
+    loader.style.opacity = '0';
+    loader.style.visibility = 'hidden';
+    setTimeout(() => loader.remove(), 400);
+  }
+};
+
 // Initialization
 const init = async () => {
   const urlParams = new URLSearchParams(window.location.search);
@@ -38,7 +47,6 @@ const init = async () => {
 
   if (mode === 'login') {
     await logoutUser();
-    // Clean up URL to avoid repeated logouts on refresh
     window.history.replaceState({}, document.title, window.location.pathname);
   }
 
@@ -49,6 +57,7 @@ const init = async () => {
     } else {
       showLogin();
     }
+    hideLoader(); // Hide loader after initial render
   });
 };
 
