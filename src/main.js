@@ -162,7 +162,7 @@ function showDashboard(user) {
   const profileBtn = document.getElementById('profile-btn');
   const closeProfileBtn = document.getElementById('close-profile-modal-btn');
   const profileForm = document.getElementById('edit-profile-form');
-  
+
   const profileView = document.getElementById('profile-view-mode');
   const enableEditBtn = document.getElementById('enable-edit-profile-btn');
   const cancelEditBtn = document.getElementById('cancel-edit-profile-btn');
@@ -173,13 +173,13 @@ function showDashboard(user) {
       // Always reset to view mode on open
       if (profileView) profileView.style.display = 'block';
       if (profileForm) profileForm.style.display = 'none';
-      
+
       const currentUsernameDisplay = document.getElementById('current-username-display');
       if (currentUsernameDisplay) {
-         currentUsernameDisplay.textContent = user.displayName || 'No name set';
+        currentUsernameDisplay.textContent = user.displayName || 'No name set';
       }
       if (profileForm && profileForm.username) {
-         profileForm.username.value = user.displayName || '';
+        profileForm.username.value = user.displayName || '';
       }
     });
   }
@@ -235,13 +235,13 @@ function showDashboard(user) {
           let tod = 'evening 🌙';
           if (hour < 12) tod = 'morning 🌅';
           else if (hour < 17) tod = 'afternoon ☀️';
-          
+
           greetingEl.textContent = `Good ${tod}, ${newUsername}`;
         }
-        
+
         const displayUsernameEl = document.getElementById('current-username-display');
         if (displayUsernameEl) displayUsernameEl.textContent = newUsername;
-        
+
         if (profileView) profileView.style.display = 'block';
         if (profileForm) profileForm.style.display = 'none';
 
@@ -1476,11 +1476,11 @@ function showDashboard(user) {
         item.style.fontWeight = '500';
 
         if (exceedAmount > 0) {
-          item.style.color = '#dc2626'; 
+          item.style.color = '#dc2626';
           item.innerHTML = `⚠️ At this rate, you'll exceed your budget by <span style="font-weight: 700;">₹ ${exceedAmount.toFixed(0)}</span> this month`;
         } else {
           const withinAmount = limit - projectedSpend;
-          item.style.color = '#16a34a'; 
+          item.style.color = '#16a34a';
           item.innerHTML = `✅ At this rate, you'll be within your budget by <span style="font-weight: 700;">₹ ${withinAmount.toFixed(0)}</span> this month`;
         }
         insightsArea.appendChild(item);
@@ -1496,7 +1496,7 @@ function showDashboard(user) {
         const daysPassed = now.getDate();
         for (let i = 1; i <= daysPassed; i++) {
           const d = new Date(currentYear, currentMonth, i);
-          const day = d.getDay(); 
+          const day = d.getDay();
           if (day === 0 || day === 6) weekendDays++;
           else weekdayDays++;
         }
@@ -1504,10 +1504,10 @@ function showDashboard(user) {
         allExpenses
           .filter(t => t.type !== 'income' && t.date.startsWith(currentBudgetMonth))
           .forEach(t => {
-             const d = new Date(t.date);
-             const day = d.getDay();
-             if (day === 0 || day === 6) weekendSpend += t.amount;
-             else weekdaySpend += t.amount;
+            const d = new Date(t.date);
+            const day = d.getDay();
+            if (day === 0 || day === 6) weekendSpend += t.amount;
+            else weekdaySpend += t.amount;
           });
 
         const avgWeekend = weekendDays > 0 ? weekendSpend / weekendDays : 0;
@@ -1538,11 +1538,11 @@ function showDashboard(user) {
           item.style.fontSize = '0.82rem';
           item.style.fontWeight = '500';
           item.style.color = 'var(--text-color)';
-          
+
           if (category.toLowerCase().includes('food')) {
-              item.innerHTML = `<span style="color: #16a34a; font-weight:600;">Smart Suggestion:</span> Reducing food expenses by ₹50/day saves <span style="font-weight:700;">₹1500/month</span>`;
+            item.innerHTML = `<span style="color: #16a34a; font-weight:600;">Smart Suggestion:</span> Reducing food expenses by ₹50/day saves <span style="font-weight:700;">₹1500/month</span>`;
           } else {
-              item.innerHTML = `<span style="color: #16a34a; font-weight:600;">Smart Suggestion:</span> Cutting <span style="font-weight: 700;">${category}</span> budget by 10% saves you <span style="font-weight: 700;">₹ ${(topCat[1] * 0.1).toFixed(0)}</span>`;
+            item.innerHTML = `<span style="color: #16a34a; font-weight:600;">Smart Suggestion:</span> Cutting <span style="font-weight: 700;">${category}</span> budget by 10% saves you <span style="font-weight: 700;">₹ ${(topCat[1] * 0.1).toFixed(0)}</span>`;
           }
           insightsArea.appendChild(item);
         }
@@ -1599,9 +1599,10 @@ function showDashboard(user) {
     });
   }
 
-  
+
   expensesCleanup = subscribeToExpenses(user.uid, (expenses) => {
-    allExpenses = expenses;
+    // Sort expenses by the transaction date (newest first)
+    allExpenses = expenses.sort((a, b) => new Date(b.date) - new Date(a.date));
     updateFilterOptions();
     updateBudgetMonthOptions(); // Update month dropdown
 
